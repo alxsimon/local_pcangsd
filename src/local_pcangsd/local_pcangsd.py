@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pcangsd_core import shared
 from pcangsd_core import covariance
-import lostruct
+# import lostruct
 import multiprocessing as mp
 import os, contextlib
 
