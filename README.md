@@ -18,6 +18,9 @@ For now the lostruct part is not done.
 ## Install
 
 1) Install PCAngsd + other requirements
+```
+pip install git+https://github.com/alxsimon/pcangsd.git
+```
 
 2)
 ```
