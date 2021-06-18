@@ -17,19 +17,9 @@ For now the lostruct part is not done.
 
 ## Install
 
-1) Install PCAngsd + other requirements
-```
-pip install git+https://github.com/alxsimon/pcangsd.git
-```
-
-2)
-```
-git clone https://github.com/alxsimon/local_pcangsd.git
-cd local_pcangsd
-pip install ./
-# or
-pip install --user ./
-```
+1) `pip install git+https://github.com/alxsimon/pcangsd.git`
+2) `pip install h5py numpy pandas`
+3) `pip install git+https://github.com/alxsimon/local_pcangsd.git`
 
 ## Usage
 
