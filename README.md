@@ -10,7 +10,9 @@ For now the lostruct part is not done.
 ## Requirements
 
 - PCAngsd (my fork for now, requires a manual install): https://github.com/alxsimon/pcangsd
-- h5py
+- Xarray
+- Zarr
+- Dask
 - numpy
 - pandas
 - (lostruct at some point)
