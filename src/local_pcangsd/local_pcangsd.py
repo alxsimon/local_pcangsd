@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import xarray as xr
+import sgkit as sg
 
 DIM_VARIANT = "variants"
 DIM_SAMPLE = "samples"
@@ -67,8 +68,17 @@ def load_dataset(store: str, chunksize: int=10000) -> xr.Dataset:
     return ds
 
 
-# function for windowing
-# Wrapper of sgkit windowing functions
+def window(ds: xr.Dataset, type: str, size: int) -> xr.Dataset:
+    """
+    Wrapper arround sgkit.window_by_position
+    Size either in bp or number of variants depending on type
+    """
+    if type == "position":
+        return sg.window_by_position(ds, size=size)
+    elif type == "variant":
+        return sg.window_by_variant(ds, size=size)
+    else:
+        raise ValueError('window type accepted are only "position" or "variant"')
 
 
 
