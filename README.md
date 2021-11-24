@@ -7,26 +7,33 @@ to analyse low-coverage data (genotype likelihoods) with local PCA.
 
 For now the lostruct part is not done.
 
-## Requirements
-
-- PCAngsd (my fork for now, requires a manual install): https://github.com/alxsimon/pcangsd
-- Xarray
-- Zarr
-- Dask
-- numpy
-- pandas
-- (lostruct at some point)
-
 ## Install
 
-1) `pip install git+https://github.com/alxsimon/pcangsd.git`
-2) `pip install h5py numpy pandas`
-3) `pip install git+https://github.com/alxsimon/local_pcangsd.git`
+Requirements can be seen in the [`conda_env.yaml`](https://github.com/alxsimon/local_pcangsd/blob/main/conda_env.yaml) file.
+
+The PCAngsd package is installed from a forked version that packages it for easier access to internal functions.
+See https://github.com/alxsimon/pcangsd.
+
+The easiest way to install local_pcangsd and its dependencies is through conda:
+
+```bash
+conda env create -f conda_env.yaml
+# OR
+mamba env create -f conda_env.yaml
+conda activate local_pcangsd
+pip install git+https://github.com/alxsimon/local_pcangsd.git
+git clone https://github.com/alxsimon/local_pcangsd.git
+pip install ./local_pcangsd
+```
 
 ## Usage
 
-```python
-import local_pcangsd as lp
+If you want to add the conda environment as a jupyter kernel
+
+```bash
+conda activate local_pcangsd
+mamba install -y ipykernel
+python -m ipykernel install --user --name local_pcangsd
 ```
 
-**Some examples go here...**
+Example code is presented in [`example.ipynb`](https://github.com/alxsimon/local_pcangsd/blob/main//example.ipynb).

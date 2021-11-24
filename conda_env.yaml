@@ -1,0 +1,21 @@
+name: local_pcangsd
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - numpy
+  - pandas
+  - zarr
+  - xarray
+  - dask
+  - sgkit
+  - pip
+  - cython
+  - scipy
+  - scikit-bio
+  - matplotlib
+  - pip:
+      - git+https://github.com/alxsimon/pcangsd.git
+      - lostruct
