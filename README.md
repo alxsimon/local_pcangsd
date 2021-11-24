@@ -5,8 +5,6 @@ In development...
 The final objective is to combine [PCAngsd](https://github.com/Rosemeis/pcangsd) with [lostruct](https://github.com/jguhlin/lostruct-py)
 to analyse low-coverage data (genotype likelihoods) with local PCA.
 
-For now the lostruct part is not done.
-
 ## Install
 
 Requirements can be seen in the [`conda_env.yaml`](https://github.com/alxsimon/local_pcangsd/blob/main/conda_env.yaml) file.
