@@ -2,10 +2,13 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import sgkit as sg
-from sgkit.window import window_statistic
+import dask.array as da
+from sgkit.window import _get_chunked_windows, _sizes_to_start_offsets
 from pcangsd_core import shared
 from pcangsd_core import covariance
 import os, contextlib
+from typing import Optional
+import shutil
 
 DIM_VARIANT = "variants"
 DIM_SAMPLE = "samples"
@@ -85,7 +88,7 @@ def window(ds: xr.Dataset, type: str, size: int) -> xr.Dataset:
         raise ValueError(
             "Window type accepted are only 'position' or 'variant'."
         )
-    
+
     if type == "position":
         return sg.window_by_position(ds, size=size)
     elif type == "variant":
@@ -116,22 +119,156 @@ def pcangsd_wrapper(
     return C, total_variance, vals[:k], vectors[:, :k].T
 
 
-def pca_windows(ds: xr.Dataset) -> np.array:
+def pca_window(
+    ds: xr.Dataset, 
+    zarr_store: str, 
+    output_chunsize: int=10000,
+    k: Optional[int]=None,
+    emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
+    emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1,
+    tmp_folder: str='/tmp/tmp_local_pcangsd',
+    scheduler: str='processes', num_workers: Optional[int]=None,
+    clean_tmp: bool=True,
+) -> np.array:
     """
     Run PCAngsd on each window.
     Return results as np.array of objects (lostruct style).
+
+    Code modified from sgkit.window_statistic
     """
     
     if 'window_start' not in ds or 'window_stop' not in ds:
         raise Exception("Variables 'window_start' and 'window_stop' not defined in the Dataset.")
 
+    if k is None:
+        k = ds.dims['samples']
+
+    values = ds.genotype_likelihood
+    window_contigs = ds.window_contig.values
     window_starts = ds.window_start.values
     window_stops = ds.window_stop.values
-    result = []
-    for start, stop in zip(window_starts, window_stops):
-        result.append(pcangsd_wrapper(ds.genotype_likelihood[start:stop].values, k=10))
+
+    values = da.asarray(values)
+
+    desired_chunks = values.chunks # or new chunks given by function argument
+
+    window_lengths = window_stops - window_starts
+    depth = np.max(window_lengths)
+
+    # Dask will raise an error if the last chunk size is smaller than the depth
+    # Workaround by rechunking to combine the last two chunks in first axis
+    # See https://github.com/dask/dask/issues/6597
+    if depth > values.chunks[0][-1]:
+        chunk0 = values.chunks[0]
+        new_chunk0 = tuple(list(chunk0[:-2]) + [chunk0[-2] + chunk0[-1]])
+        values = values.rechunk({0: new_chunk0})
+
+    chunks = values.chunks[0]
+
+    rel_window_starts, windows_per_chunk = _get_chunked_windows(chunks, window_starts, window_stops)
+
+    # Add depth for map_overlap
+    rel_window_starts = rel_window_starts + depth
+    rel_window_stops = rel_window_starts + window_lengths
+
+    chunk_offsets = _sizes_to_start_offsets(windows_per_chunk)
+
+    if not os.path.exists(tmp_folder):
+        os.mkdir(tmp_folder)
+
+    def create_save_pca_result(res, window_index, tmp_folder):
+        tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
+        window_ds = xr.Dataset(
+                data_vars={
+                    'sample_id': ([DIM_SAMPLE], ds.sample_id.values),
+                    'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
+                    'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
+                    'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
+                    'C': ([DIM_WINDOW, f'{DIM_SAMPLE}_0', f'{DIM_SAMPLE}_1'], res[0][np.newaxis]),
+                    'total_variance': ([DIM_WINDOW], np.array([res[1]])),
+                    'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
+                    'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
+                },
+                attrs=ds.attrs,
+            )
+        window_ds.to_zarr(tmp_file, mode="w")
+        return tmp_file
+
+    def blockwise_moving_stat(x: np.array, block_info=None):
+        # not sure I know what block_info is used for, passed by map_overlap??
+        if block_info is None or len(block_info) == 0:
+            return np.array([])
+        chunk_number = block_info[0]["chunk-location"][0]
+        chunk_offset_start = chunk_offsets[chunk_number]
+        chunk_offset_stop = chunk_offsets[chunk_number + 1]
+        chunk_window_starts = rel_window_starts[chunk_offset_start:chunk_offset_stop]
+        chunk_window_stops = rel_window_stops[chunk_offset_start:chunk_offset_stop]
+        zarr_list = []
+        window_index = windows_per_chunk[:chunk_number].sum() # number of windows in all previous chunks
+        for i,j in zip(chunk_window_starts, chunk_window_stops):
+            res_ij = pcangsd_wrapper(x[i:j], k=k,
+                emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
+                emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
+            )
+            tmp_file = create_save_pca_result(res_ij, window_index, tmp_folder)
+            zarr_list.append(tmp_file)
+            window_index += 1
+        return np.array(zarr_list, dtype=object)
+
+    map_depth = {0: depth}
+
+    result = values.map_overlap(
+        blockwise_moving_stat,
+        depth=map_depth,
+        dtype=object,
+        chunks=(1,),
+        drop_axis=(1, 2),
+        boundary=0,
+        trim=False,
+    )
+
+    zarr_list = result.compute(scheduler=scheduler, num_workers=num_workers)
+
+    ds_pca = xr.open_mfdataset(zarr_list, combine='nested', concat_dim='windows').chunk({'windows': output_chunsize})
+    to_store = ds_pca.copy()
+    for var in to_store.variables:
+        to_store[var].encoding.clear()
+    to_store.to_zarr(zarr_store, mode='w')
+
+    if clean_tmp:
+        shutil.rmtree(tmp_folder, ignore_errors=True)
     
-    return np.array(result, dtype=object) # same result as vstack
+    return zarr_store
+
+
+# def pca_window(
+#     ds: xr.Dataset, k: Optional[int]=None,
+#     emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
+#     emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1
+# ) -> np.array:
+#     """
+#     Run PCAngsd on each window.
+#     Return results as np.array of objects (lostruct style).
+#     """
+    
+#     if 'window_start' not in ds or 'window_stop' not in ds:
+#         raise Exception("Variables 'window_start' and 'window_stop' not defined in the Dataset.")
+
+#     if k is None:
+#         k = ds.dims['samples']
+
+#     window_starts = ds.window_start.values
+#     window_stops = ds.window_stop.values
+#     result = []
+#     for start, stop in zip(window_starts, window_stops):
+#         result.append(pcangsd_wrapper(
+#             ds.genotype_likelihood[start:stop].values, 
+#             k=k,
+#             emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
+#             emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
+#         ))
+    
+#     return np.array(result, dtype=object) # similar to vstack but with explicit dtype
 
 
 #===========================================================
