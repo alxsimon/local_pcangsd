@@ -19,7 +19,6 @@ conda env create -f conda_env.yaml
 # OR
 mamba env create -f conda_env.yaml
 conda activate local_pcangsd
-pip install git+https://github.com/alxsimon/local_pcangsd.git
 git clone https://github.com/alxsimon/local_pcangsd.git
 pip install ./local_pcangsd
 ```
