@@ -5,4 +5,5 @@ from .local_pcangsd import (
     window,
     pcangsd_wrapper,
     pca_window,
+    to_lostruct
 )

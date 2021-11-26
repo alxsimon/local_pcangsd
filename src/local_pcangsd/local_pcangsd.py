@@ -229,7 +229,7 @@ def pca_window(
 
     zarr_list = result.compute(scheduler=scheduler, num_workers=num_workers)
 
-    ds_pca = xr.open_mfdataset(zarr_list, combine='nested', concat_dim='windows').chunk({'windows': output_chunsize})
+    ds_pca = xr.open_mfdataset(zarr_list, combine='nested', concat_dim='windows', engine="zarr").chunk({'windows': output_chunsize})
     to_store = ds_pca.copy()
     for var in to_store.variables:
         to_store[var].encoding.clear()
@@ -241,126 +241,14 @@ def pca_window(
     return zarr_store
 
 
-# def pca_window(
-#     ds: xr.Dataset, k: Optional[int]=None,
-#     emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
-#     emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1
-# ) -> np.array:
-#     """
-#     Run PCAngsd on each window.
-#     Return results as np.array of objects (lostruct style).
-#     """
-    
-#     if 'window_start' not in ds or 'window_stop' not in ds:
-#         raise Exception("Variables 'window_start' and 'window_stop' not defined in the Dataset.")
-
-#     if k is None:
-#         k = ds.dims['samples']
-
-#     window_starts = ds.window_start.values
-#     window_stops = ds.window_stop.values
-#     result = []
-#     for start, stop in zip(window_starts, window_stops):
-#         result.append(pcangsd_wrapper(
-#             ds.genotype_likelihood[start:stop].values, 
-#             k=k,
-#             emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
-#             emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
-#         ))
-    
-#     return np.array(result, dtype=object) # similar to vstack but with explicit dtype
-
-
-#===========================================================
-# CODE NOT WORKING BELOW
-
-def pcangsd_wrapper_vectors(gl: np.array) -> np.array:
-    L = gl[:,:,:-1].reshape(gl.shape[0], -1)
-    L = L.astype('float32')
-    with open(os.devnull, 'w') as devnull:
-        with contextlib.redirect_stdout(devnull):
-            f = shared.emMAF(L, iter=10, tole=1e-4, t=1)
-            C, P, K = covariance.emPCA(L, f, e=0, iter=10, tole=1e-4, t=1)
-    vals, vectors = np.linalg.eig(C)
-    return vectors
-
-
-def pca_windows_sgkit_stat(ds: xr.Dataset) -> xr.Dataset:
-    """
-    Run PCAngsd on each window.
-    Only return the vectors (for now).
-    """
-    
-    if 'window_start' not in ds or 'window_stop' not in ds:
-        raise Exception("Variables 'window_start' and 'window_stop' not defined.")
-
-    res = window_statistic(
-        ds.genotype_likelihood,
-        pcangsd_wrapper_vectors,
-        window_starts=ds.window_start.values,
-        window_stops=ds.window_stop.values,
-        dtype=np.float32,
-    )
-    return res.compute(scheduler='single-threaded') # parallel version not working
-
-
-#====================================================
-
-# statistic function to apply to each window
-def pca_gufunc(gl: np.array,
-    emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
-    emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1,
-) -> tuple:
-    L = gl[:,:,:-1].reshape(gl.shape[0], -1)
-    L = L.astype('float32')
-
-    with open(os.devnull, 'w') as devnull:
-        with contextlib.redirect_stdout(devnull):
-            f = shared.emMAF(L, iter=emMAF_iter, tole=emMAF_tole, t=emMAF_t)
-            C, P, K = covariance.emPCA(L, f, e=emPCA_e, iter=emPCA_iter, tole=emPCA_tole, t=emPCA_t)
-    vals, vectors = np.linalg.eig(C)
-
-    return (vectors, vals, C, P, K)
-
-def pca_block(
-    ds: xr.Dataset, window_size: int,
-    emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
-    emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1,
-) -> xr.Dataset:
-    """
-    Function computing PCA on a block of a Dataset.
-    Made for xarray.map_blocks.
-    """
-
-    if ds.dims[DIM_VARIANT] == 0: # then return template
-        size_sample = ds.dims[DIM_SAMPLE]
-        return xr.Dataset(
-            data_vars={
-                'vectors': ([DIM_SAMPLE, DIM_PC, DIM_WINDOW], np.zeros((size_sample, size_sample, 1), dtype=np.float64)),
-                'vals': ([DIM_PC, DIM_WINDOW], np.zeros((size_sample, 1), dtype=np.float64)),
-                'C': ([DIM_SAMPLE, DIM_SAMPLE, DIM_WINDOW], np.zeros((size_sample, size_sample, 1), dtype=np.float64)),
-                'P': ([DIM_VARIANT, DIM_PC, DIM_WINDOW], np.zeros((window_size, size_sample, 1), dtype=np.float64)),
-                'K': ([DIM_WINDOW], np.zeros((1), dtype=np.int8)),
-            },
+def to_lostruct(ds_pca: xr.Dataset) -> np.array:
+    results = [
+        (
+            ds_pca.C.isel(windows=i).values,
+            ds_pca.total_variance.isel(windows=i).values,
+            ds_pca.vals.isel(windows=i).values,
+            ds_pca.vectors.isel(windows=i).values,
         )
-
-    gl = ds.genotype_likelihood[:,:,:-1].values
-    L = gl.reshape(gl.shape[0], -1)
-    L = L.astype('float32')
-
-    with open(os.devnull, 'w') as devnull:
-        with contextlib.redirect_stdout(devnull):
-            f = shared.emMAF(L, iter=emMAF_iter, tole=emMAF_tole, t=emMAF_t)
-            C, P, K = covariance.emPCA(L, f, e=emPCA_e, iter=emPCA_iter, tole=emPCA_tole, t=emPCA_t)
-    vals, vectors = np.linalg.eig(C)
-
-    pca_res = xr.Dataset(
-        data_vars={
-            'vectors': ([DIM_SAMPLE, DIM_PC, DIM_WINDOW], vectors[:,:,np.newaxis]),
-            'vals': ([DIM_PC, DIM_WINDOW], vals[:,np.newaxis]),
-            'C': ([DIM_SAMPLE, DIM_SAMPLE, DIM_WINDOW], C[:,:,np.newaxis]),
-            'P': ([DIM_VARIANT, DIM_PC, DIM_WINDOW], P[:,:,np.newaxis]),
-            'K': ([DIM_WINDOW], np.array(K, dtype=np.int8))
-        },
-    )
-    return pca_res
+        for i in range(ds_pca.dims['windows'])
+    ]
+    return np.array(results, dtype=object)
