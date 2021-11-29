@@ -90,13 +90,13 @@ def window(ds: xr.Dataset, type: str, size: int, min_variant_number: int=100) ->
         )
 
     if type == "position":
-        ds_windows = sg.window_by_position(ds, size=size)
+        ds = sg.window_by_position(ds, size=size)
     elif type == "variant":
-        ds_windows = sg.window_by_variant(ds, size=size)
+        ds = sg.window_by_variant(ds, size=size)
 
     # only keep windows with enough variants
     kept = np.where((ds.window_stop.values - ds.window_start.values) > min_variant_number)[0]
-    return ds_windows.isel(windows=kept)
+    return ds.isel(windows=kept)
 
 def _pcangsd_wrapper(
     gl: np.array, k: int,
