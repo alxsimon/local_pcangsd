@@ -78,7 +78,7 @@ def load_dataset(store: str, chunksize: int=10000) -> xr.Dataset:
     return ds
 
 
-def window(ds: xr.Dataset, type: str, size: int) -> xr.Dataset:
+def window(ds: xr.Dataset, type: str, size: int, min_variant_number: int=100) -> xr.Dataset:
     """
     Wrapper arround sgkit.window_by_position.
     Size either in bp or number of variants depending on type.
@@ -90,12 +90,15 @@ def window(ds: xr.Dataset, type: str, size: int) -> xr.Dataset:
         )
 
     if type == "position":
-        return sg.window_by_position(ds, size=size)
+        ds_windows = sg.window_by_position(ds, size=size)
     elif type == "variant":
-        return sg.window_by_variant(ds, size=size)
+        ds_windows = sg.window_by_variant(ds, size=size)
 
+    # only keep windows with enough variants
+    kept = np.where((ds.window_stop.values - ds.window_start.values) > min_variant_number)[0]
+    return ds_windows.isel(windows=kept)
 
-def pcangsd_wrapper(
+def _pcangsd_wrapper(
     gl: np.array, k: int,
     emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
     emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1,
@@ -117,6 +120,25 @@ def pcangsd_wrapper(
     vals, vectors = np.linalg.eig(C)
     total_variance = np.sum(np.power(C, 2).flatten())
     return C, total_variance, vals[:k], vectors[:, :k].T
+
+
+def _create_save_pca_result(res, window_index, tmp_folder):
+    tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
+    window_ds = xr.Dataset(
+            data_vars={
+                'sample_id': ([DIM_SAMPLE], ds.sample_id.values),
+                'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
+                'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
+                'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
+                'C': ([DIM_WINDOW, f'{DIM_SAMPLE}_0', f'{DIM_SAMPLE}_1'], res[0][np.newaxis]),
+                'total_variance': ([DIM_WINDOW], np.array([res[1]])),
+                'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
+                'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
+            },
+            attrs=ds.attrs,
+        )
+    window_ds.to_zarr(tmp_file, mode="w")
+    return tmp_file
 
 
 def pca_window(
@@ -176,24 +198,6 @@ def pca_window(
     if not os.path.exists(tmp_folder):
         os.mkdir(tmp_folder)
 
-    def create_save_pca_result(res, window_index, tmp_folder):
-        tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
-        window_ds = xr.Dataset(
-                data_vars={
-                    'sample_id': ([DIM_SAMPLE], ds.sample_id.values),
-                    'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
-                    'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
-                    'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
-                    'C': ([DIM_WINDOW, f'{DIM_SAMPLE}_0', f'{DIM_SAMPLE}_1'], res[0][np.newaxis]),
-                    'total_variance': ([DIM_WINDOW], np.array([res[1]])),
-                    'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
-                    'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
-                },
-                attrs=ds.attrs,
-            )
-        window_ds.to_zarr(tmp_file, mode="w")
-        return tmp_file
-
     def blockwise_moving_stat(x: np.array, block_info=None):
         # not sure I know what block_info is used for, passed by map_overlap??
         if block_info is None or len(block_info) == 0:
@@ -206,11 +210,11 @@ def pca_window(
         zarr_list = []
         window_index = windows_per_chunk[:chunk_number].sum() # number of windows in all previous chunks
         for i,j in zip(chunk_window_starts, chunk_window_stops):
-            res_ij = pcangsd_wrapper(x[i:j], k=k,
+            res_ij = _pcangsd_wrapper(x[i:j], k=k,
                 emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
                 emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
             )
-            tmp_file = create_save_pca_result(res_ij, window_index, tmp_folder)
+            tmp_file = _create_save_pca_result(res_ij, window_index, tmp_folder)
             zarr_list.append(tmp_file)
             window_index += 1
         return np.array(zarr_list, dtype=object)
