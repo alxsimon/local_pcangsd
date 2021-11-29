@@ -122,11 +122,11 @@ def _pcangsd_wrapper(
     return C, total_variance, vals[:k], vectors[:, :k].T
 
 
-def _create_save_pca_result(res, window_index, tmp_folder):
+def _create_save_pca_result(res, window_index, window_contigs, window_starts, window_stops, sample_id, attrs, tmp_folder):
     tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
     window_ds = xr.Dataset(
             data_vars={
-                'sample_id': ([DIM_SAMPLE], ds.sample_id.values),
+                'sample_id': ([DIM_SAMPLE], sample_id),
                 'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
                 'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
                 'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
@@ -135,7 +135,7 @@ def _create_save_pca_result(res, window_index, tmp_folder):
                 'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
                 'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
             },
-            attrs=ds.attrs,
+            attrs=attrs,
         )
     window_ds.to_zarr(tmp_file, mode="w")
     return tmp_file
@@ -171,8 +171,6 @@ def pca_window(
     window_stops = ds.window_stop.values
 
     values = da.asarray(values)
-
-    desired_chunks = values.chunks # or new chunks given by function argument
 
     window_lengths = window_stops - window_starts
     depth = np.max(window_lengths)
@@ -214,7 +212,8 @@ def pca_window(
                 emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
                 emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
             )
-            tmp_file = _create_save_pca_result(res_ij, window_index, tmp_folder)
+            tmp_file = _create_save_pca_result(res_ij, window_index, window_contigs, window_starts, 
+                window_stops, ds.sample_id.values, ds.attrs, tmp_folder)
             zarr_list.append(tmp_file)
             window_index += 1
         return np.array(zarr_list, dtype=object)
