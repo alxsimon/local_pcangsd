@@ -117,27 +117,31 @@ def _pcangsd_wrapper(
         with contextlib.redirect_stdout(devnull):
             f = shared.emMAF(L, iter=emMAF_iter, tole=emMAF_tole, t=emMAF_t)
             C, P, _ = covariance.emPCA(L, f, e=emPCA_e, iter=emPCA_iter, tole=emPCA_tole, t=emPCA_t)
+    C = C.astype(np.float32)
     vals, vectors = np.linalg.eig(C)
+    vals = vals.astype(np.float32)
+    vectors = vectors.astype(np.float32)
     total_variance = np.sum(np.power(C, 2).flatten())
     return C, total_variance, vals[:k], vectors[:, :k].T
 
 
-def _create_save_pca_result(res, window_index, window_contigs, window_starts, window_stops, sample_id, attrs, tmp_folder):
+def _create_save_pca_result(res, window_index, window_contigs, window_starts, window_stops, sample_id, attrs, tmp_folder, restart):
     tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
-    window_ds = xr.Dataset(
-            data_vars={
-                'sample_id': ([DIM_SAMPLE], sample_id),
-                'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
-                'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
-                'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
-                'C': ([DIM_WINDOW, f'{DIM_SAMPLE}_0', f'{DIM_SAMPLE}_1'], res[0][np.newaxis]),
-                'total_variance': ([DIM_WINDOW], np.array([res[1]])),
-                'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
-                'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
-            },
-            attrs=attrs,
-        )
-    window_ds.to_zarr(tmp_file, mode="w")
+    if (not restart) or (not os.path.exists(tmp_file)):
+        window_ds = xr.Dataset(
+                data_vars={
+                    'sample_id': ([DIM_SAMPLE], sample_id),
+                    'window_contig': ([DIM_WINDOW], np.array([window_contigs[window_index]], dtype=np.int64)),
+                    'window_start': ([DIM_WINDOW], np.array([window_starts[window_index]], dtype=np.int64)),
+                    'window_stop': ([DIM_WINDOW], np.array([window_stops[window_index]], dtype=np.int64)),
+                    'C': ([DIM_WINDOW, f'{DIM_SAMPLE}_0', f'{DIM_SAMPLE}_1'], res[0][np.newaxis]),
+                    'total_variance': ([DIM_WINDOW], np.array([res[1]])),
+                    'vals': ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
+                    'vectors': ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
+                },
+                attrs=attrs,
+            )
+        window_ds.to_zarr(tmp_file, mode="w")
     return tmp_file
 
 
@@ -151,12 +155,17 @@ def pca_window(
     tmp_folder: str='/tmp/tmp_local_pcangsd',
     scheduler: str='processes', num_workers: Optional[int]=None,
     clean_tmp: bool=True,
+    restart: bool=True,
 ) -> np.array:
     """
     Run PCAngsd on each window.
     Return results as np.array of objects (lostruct style).
 
     Code modified from sgkit.window_statistic
+
+    Arguments
+    -------------------
+    restart: do not overwrite tmp zarr file and continue, restarting the analysis in case of error.
     """
     
     if 'window_start' not in ds or 'window_stop' not in ds:
@@ -213,7 +222,7 @@ def pca_window(
                 emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
             )
             tmp_file = _create_save_pca_result(res_ij, window_index, window_contigs, window_starts, 
-                window_stops, ds.sample_id.values, ds.attrs, tmp_folder)
+                window_stops, ds.sample_id.values, ds.attrs, tmp_folder, restart)
             zarr_list.append(tmp_file)
             window_index += 1
         return np.array(zarr_list, dtype=object)
@@ -245,13 +254,12 @@ def pca_window(
 
 
 def to_lostruct(ds_pca: xr.Dataset) -> np.array:
+    vectors = ds_pca.vectors.values
+    vals = ds_pca.vals.values
+    C = ds_pca.C.values
+    total_variance = ds_pca.total_variance.values
+    
     results = [
-        (
-            ds_pca.C.isel(windows=i).values,
-            ds_pca.total_variance.isel(windows=i).values,
-            ds_pca.vals.isel(windows=i).values,
-            ds_pca.vectors.isel(windows=i).values,
-        )
-        for i in range(ds_pca.dims['windows'])
+        (c, t, val, vec) for c, t, val, vec in zip(C, total_variance, vals, vectors)
     ]
     return np.array(results, dtype=object)
