@@ -80,7 +80,7 @@ def load_dataset(store: str, chunksize: int=10000) -> xr.Dataset:
 
 def window(ds: xr.Dataset, type: str, size: int, min_variant_number: int=100) -> xr.Dataset:
     """
-    Wrapper arround sgkit.window_by_position.
+    Wrapper arround sgkit.window_by_[...].
     Size either in bp or number of variants depending on type.
     """
 
@@ -115,6 +115,7 @@ def _pcangsd_wrapper(
     L = L.astype('float32')
     with open(os.devnull, 'w') as devnull:
         with contextlib.redirect_stdout(devnull):
+            # hide messages from Pcangsd
             f = shared.emMAF(L, iter=emMAF_iter, tole=emMAF_tole, t=emMAF_t)
             C, P, _ = covariance.emPCA(L, f, e=emPCA_e, iter=emPCA_iter, tole=emPCA_tole, t=emPCA_t)
     C = C.astype(np.float32)
@@ -206,7 +207,6 @@ def pca_window(
         os.mkdir(tmp_folder)
 
     def blockwise_moving_stat(x: np.array, block_info=None):
-        # not sure I know what block_info is used for, passed by map_overlap??
         if block_info is None or len(block_info) == 0:
             return np.array([])
         chunk_number = block_info[0]["chunk-location"][0]

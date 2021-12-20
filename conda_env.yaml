@@ -10,7 +10,7 @@ dependencies:
   - zarr
   - xarray
   - dask
-  - sgkit
+  - sgkit>=0.4.0
   - pip
   - cython
   - scipy

@@ -4,5 +4,7 @@ from .local_pcangsd import (
     load_dataset,
     window,
     pca_window,
-    to_lostruct
+    to_lostruct,
+    _pcangsd_wrapper,
+    _create_save_pca_result,
 )
