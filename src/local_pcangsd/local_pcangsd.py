@@ -3,6 +3,7 @@ import pandas as pd
 import xarray as xr
 import sgkit as sg
 import dask.array as da
+import dask
 from sgkit.window import _get_chunked_windows, _sizes_to_start_offsets
 from pcangsd_core import shared
 from pcangsd_core import covariance
@@ -263,3 +264,35 @@ def to_lostruct(ds_pca: xr.Dataset) -> np.array:
         (c, t, val, vec) for c, t, val, vec in zip(C, total_variance, vals, vectors)
     ]
     return np.array(results, dtype=object)
+
+
+def pcangsd_merged_windows(
+        ds,
+        windows_idx: np.array,
+        k: Optional[int]=None,
+        emMAF_iter: int=200, emMAF_tole: float=1e-4, emMAF_t: int=1, 
+        emPCA_e: int=0, emPCA_iter: int=100, emPCA_tole: float=1e-5, emPCA_t: int=1
+    ) -> tuple:
+    """
+    Compute PCAngsd on merged windows of interest.
+    """
+
+    if 'window_start' not in ds or 'window_stop' not in ds:
+        raise Exception("Variables 'window_start' and 'window_stop' not defined in the Dataset.")
+
+    if k is None:
+        k = ds.dims['samples']
+
+    window_start = ds.window_start.values[windows_idx]
+    window_stop = ds.window_stop.values[windows_idx]
+    variants_idx = np.concatenate([np.array(range(i, j)) for i, j in zip(window_start, window_stop)])
+
+    with dask.config.set(**{'array.slicing.split_large_chunks': False}):
+        result_pca = _pcangsd_wrapper(
+            ds.genotype_likelihood.isel(variants=variants_idx).values, 
+            k=k,
+            emMAF_iter=emMAF_iter, emMAF_tole=emMAF_tole, emMAF_t=emMAF_t,
+            emPCA_e=emPCA_e, emPCA_iter=emPCA_iter, emPCA_tole=emPCA_tole, emPCA_t=emPCA_t,
+        )
+    
+    return result_pca

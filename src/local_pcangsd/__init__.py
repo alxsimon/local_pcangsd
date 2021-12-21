@@ -5,6 +5,7 @@ from .local_pcangsd import (
     window,
     pca_window,
     to_lostruct,
+    pcangsd_merged_windows,
     _pcangsd_wrapper,
     _create_save_pca_result,
 )
