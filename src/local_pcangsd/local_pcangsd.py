@@ -123,7 +123,8 @@ def _pcangsd_wrapper(
     vals, vectors = np.linalg.eig(C)
     vals = vals.astype(np.float32)
     vectors = vectors.astype(np.float32)
-    total_variance = np.sum(np.power(C, 2).flatten())
+    total_variance = np.sum(vals)
+    # total_variance = np.sum(np.power(C, 2).flatten())
     return C, total_variance, vals[:k], vectors[:, :k].T
 
 
