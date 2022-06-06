@@ -1,3 +1,7 @@
+# TO DO
+
+* switch to GNU v3 (cf Nayuki code)
+
 # Local PCAngsd
 
 In development...
@@ -33,4 +37,10 @@ mamba install -y ipykernel
 python -m ipykernel install --user --name local_pcangsd
 ```
 
-Example code is presented in [`example.ipynb`](https://github.com/alxsimon/local_pcangsd/blob/main//example.ipynb).
+Example code is presented in [`example.ipynb`](https://github.com/alxsimon/local_pcangsd/blob/main/example.ipynb).
+
+
+## Enclosing circle code
+
+Code produced by [@Nayuki](https://github.com/nayuki),
+available [here](https://github.com/nayuki/Nayuki-web-published-code/blob/master/smallest-enclosing-circle/smallestenclosingcircle.py).

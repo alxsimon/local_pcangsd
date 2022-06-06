@@ -5,11 +5,12 @@ import sgkit as sg
 import dask.array as da
 import dask
 from sgkit.window import _get_chunked_windows, _sizes_to_start_offsets
-from pcangsd_core import shared
-from pcangsd_core import covariance
+from pcangsd import shared
+from pcangsd import covariance
 import os, contextlib
 from typing import Optional
 import shutil
+from . import smallestenclosingcircle
 
 DIM_VARIANT = "variants"
 DIM_SAMPLE = "samples"

@@ -16,6 +16,8 @@ dependencies:
   - scipy
   - scikit-bio
   - matplotlib
+  - rpy2
+  - r-base
   - pip:
       - git+https://github.com/alxsimon/pcangsd.git
       - lostruct
