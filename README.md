@@ -13,9 +13,6 @@ to analyse low-coverage data (genotype likelihoods) with local PCA.
 
 Requirements can be seen in the [`conda_env.yaml`](https://github.com/alxsimon/local_pcangsd/blob/main/conda_env.yaml) file.
 
-The PCAngsd package is installed from a forked version that packages it for easier access to internal functions.
-See https://github.com/alxsimon/pcangsd.
-
 The easiest way to install local_pcangsd and its dependencies is through conda:
 
 ```bash
@@ -33,14 +30,17 @@ If you want to add the conda environment as a jupyter kernel
 
 ```bash
 conda activate local_pcangsd
-mamba install -y ipykernel
 python -m ipykernel install --user --name local_pcangsd
 ```
 
 Example code is presented in [`example.ipynb`](https://github.com/alxsimon/local_pcangsd/blob/main/example.ipynb).
 
+```
 
-## Enclosing circle code
+```
 
-Code produced by [@Nayuki](https://github.com/nayuki),
+## To do
+
+* For now, the enclosing circle code depends on the `lostruct` R package. In the future this part needs to be implemented in Python.
+It could use code produced by [@Nayuki](https://github.com/nayuki),
 available [here](https://github.com/nayuki/Nayuki-web-published-code/blob/master/smallest-enclosing-circle/smallestenclosingcircle.py).
