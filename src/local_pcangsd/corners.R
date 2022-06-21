@@ -1,3 +1,7 @@
+# This is a local copy of code from the R lostruct package
+# https://github.com/petrelharp/local_pca
+# written by Han Li and Peter Ralph
+
 #' Find Points in a 2D Cloud Closest to the "Corners"
 #'
 #' Finds the k "extreme points" that lie closest to the minimal enclosing circle,
