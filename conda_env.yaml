@@ -16,6 +16,7 @@ dependencies:
   - scipy
   - scikit-bio
   - matplotlib
+  - seaborn
   - rpy2
   - r-base
   - ipykernel

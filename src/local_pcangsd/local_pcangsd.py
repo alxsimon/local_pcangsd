@@ -207,7 +207,7 @@ def pca_window(
     emPCA_tole: float = 1e-5,
     emPCA_t: int = 1,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
-    scheduler: str = "processes",
+    scheduler: str = "threads",
     num_workers: Optional[int] = None,
     clean_tmp: bool = True,
     restart: bool = True,
@@ -315,7 +315,11 @@ def pca_window(
         trim=False,
     )
 
-    zarr_list = result.compute(scheduler=scheduler, num_workers=num_workers)
+    zarr_list = result.compute(
+        scheduler=scheduler,
+        num_workers=num_workers,
+        threads_per_worker=1,
+    )
 
     ds_pca = xr.open_mfdataset(
         zarr_list, combine="nested", concat_dim="windows", engine="zarr"
