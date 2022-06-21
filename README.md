@@ -5,7 +5,7 @@ In development...
 The objective is to combine [PCAngsd](https://github.com/Rosemeis/pcangsd) with [lostruct](https://github.com/jguhlin/lostruct-py)
 to analyse low-coverage data (genotype likelihoods) with local PCA.
 
-Genotype likelihood file can be large and will often not fit into memory.
+Genotype likelihood files can be large and will often not fit into memory.
 This module leverages the use of xarray to store and access genotype likelihoods on disk, in a data structure comparable to [`sgkit`](https://pystatgen.github.io/sgkit/latest/).
 
 Similarly, PCA results are stored as an xarray dataset for easy manipulation and storage.
