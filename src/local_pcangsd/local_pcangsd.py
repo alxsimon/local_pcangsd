@@ -118,13 +118,8 @@ def window(
 def _pcangsd_wrapper(
     gl: np.array,
     k: int,
-    emMAF_iter: int = 200,
-    emMAF_tole: float = 1e-4,
-    emMAF_t: int = 1,
-    emPCA_e: int = 0,
-    emPCA_iter: int = 100,
-    emPCA_tole: float = 1e-5,
-    emPCA_t: int = 1,
+    *args,
+    **kwargs,
 ) -> tuple[np.array, float, np.array, np.array]:
     """
     Wrapper around PCAngsd function returning a tuple
@@ -136,13 +131,24 @@ def _pcangsd_wrapper(
 
     L = gl[:, :, :-1].reshape(gl.shape[0], -1)
     L = L.astype("float32")
+
+    args_emMAF = dict(
+        iter=kwargs["maf_iter"],
+        tole=kwargs["maf_tole"],
+        t=kwargs["threads"],
+    )
+    args_emPCA = dict(
+        e=kwargs["n_eig"],
+        iter=kwargs["iter"],
+        tole=kwargs["tole"],
+        t=kwargs["threads"],
+    )
+
     with open(os.devnull, "w") as devnull:
         with contextlib.redirect_stdout(devnull):
             # hide messages from Pcangsd
-            f = shared.emMAF(L, iter=emMAF_iter, tole=emMAF_tole, t=emMAF_t)
-            C, P, _ = covariance.emPCA(
-                L, f, e=emPCA_e, iter=emPCA_iter, tole=emPCA_tole, t=emPCA_t
-            )
+            f = shared.emMAF(L, **args_emMAF)
+            C, P, _ = covariance.emPCA(L, f, **args_emPCA)
     C = C.astype(np.float32)
     vals, vectors = np.linalg.eig(C)
     vals = vals.astype(np.float32)
@@ -199,18 +205,17 @@ def pca_window(
     zarr_store: str,
     output_chunsize: int = 10000,
     k: Optional[int] = None,
-    emMAF_iter: int = 200,
-    emMAF_tole: float = 1e-4,
-    emMAF_t: int = 1,
-    emPCA_e: int = 0,
-    emPCA_iter: int = 100,
-    emPCA_tole: float = 1e-5,
-    emPCA_t: int = 1,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
     scheduler: str = "threads",
     num_workers: Optional[int] = None,
     clean_tmp: bool = True,
     restart: bool = True,
+    maf_iter: int = 200,
+    maf_tole: float = 1e-4,
+    n_eig: int = 0,
+    iter: int = 100,
+    tole: float = 1e-5,
+    pcangsd_threads: int = 1,
 ) -> np.array:
     """
     Run PCAngsd on each window.
@@ -230,6 +235,15 @@ def pca_window(
 
     if k is None:
         k = ds.dims["samples"]
+
+    args_pcangsd = dict(
+        maf_iter=maf_iter,
+        maf_tole=maf_tole,
+        n_eig=n_eig,
+        iter=iter,
+        tole=tole,
+        threads=pcangsd_threads,
+    )
 
     values = ds.genotype_likelihood
     window_contigs = ds.window_contig.values
@@ -280,13 +294,7 @@ def pca_window(
             res_ij = _pcangsd_wrapper(
                 x[i:j],
                 k=k,
-                emMAF_iter=emMAF_iter,
-                emMAF_tole=emMAF_tole,
-                emMAF_t=emMAF_t,
-                emPCA_e=emPCA_e,
-                emPCA_iter=emPCA_iter,
-                emPCA_tole=emPCA_tole,
-                emPCA_t=emPCA_t,
+                **args_pcangsd,
             )
             tmp_file = _create_save_pca_result(
                 res_ij,
@@ -351,13 +359,12 @@ def pcangsd_merged_windows(
     ds,
     windows_idx: np.array,
     k: Optional[int] = None,
-    emMAF_iter: int = 200,
-    emMAF_tole: float = 1e-4,
-    emMAF_t: int = 1,
-    emPCA_e: int = 0,
-    emPCA_iter: int = 100,
-    emPCA_tole: float = 1e-5,
-    emPCA_t: int = 1,
+    maf_iter: int = 200,
+    maf_tole: float = 1e-4,
+    n_eig: int = 0,
+    iter: int = 100,
+    tole: float = 1e-5,
+    pcangsd_threads: int = 1,
 ) -> tuple:
     """
     Compute PCAngsd on merged windows of interest.
@@ -371,6 +378,15 @@ def pcangsd_merged_windows(
     if k is None:
         k = ds.dims["samples"]
 
+    args_pcangsd = dict(
+        maf_iter=maf_iter,
+        maf_tole=maf_tole,
+        n_eig=n_eig,
+        iter=iter,
+        tole=tole,
+        threads=pcangsd_threads,
+    )
+
     window_start = ds.window_start.values[windows_idx]
     window_stop = ds.window_stop.values[windows_idx]
     variants_idx = np.concatenate(
@@ -381,13 +397,7 @@ def pcangsd_merged_windows(
         result_pca = _pcangsd_wrapper(
             ds.genotype_likelihood.isel(variants=variants_idx).values,
             k=k,
-            emMAF_iter=emMAF_iter,
-            emMAF_tole=emMAF_tole,
-            emMAF_t=emMAF_t,
-            emPCA_e=emPCA_e,
-            emPCA_iter=emPCA_iter,
-            emPCA_tole=emPCA_tole,
-            emPCA_t=emPCA_t,
+            **args_pcangsd,
         )
 
     return result_pca
