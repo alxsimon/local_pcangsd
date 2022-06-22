@@ -21,9 +21,16 @@ DIM_WINDOW = "windows"
 
 
 def create_dataset(df: pd.DataFrame, contigs: list) -> xr.Dataset:
-    """
-    df: pandas DataFrame (chunk of the beagle file)
-    contigs: list of contig names
+    """Creates the genotype likelihood dataset from a chunk of dataframe.
+
+    This is used to work on chunks in beagle_to_zarr.
+
+    Args:
+        df: pandas DataFrame (chunk of the beagle file)
+        contigs: list of contig names
+
+    Returns:
+        xarray.Dataset: dataset of the chunk.
     """
     sample_id = np.array(df.columns[range(3, df.shape[1], 3)])
 
@@ -66,8 +73,12 @@ def create_dataset(df: pd.DataFrame, contigs: list) -> xr.Dataset:
 
 
 def beagle_to_zarr(input: str, store: str, chunksize: int = 10000) -> None:
-    """
-    Converts an ANGSD genotype likelihood dataset to a Zarr array on disk.
+    """Converts an ANGSD genotype likelihood dataset to a Zarr array on disk.
+
+    Args:
+        input: path to a genotype likelihood file in beagle format produced by ANGSD.
+        store: output file on disk to store the dataset as a zarr file, ex: "output.zarr".
+        chunksize: size of each chunk in the variant dimension.
     """
 
     # first pass to obtain contig names
@@ -95,9 +106,24 @@ def load_dataset(store: str, chunksize: int = 10000) -> xr.Dataset:
 def window(
     ds: xr.Dataset, type: str, size: int, min_variant_number: int = 100
 ) -> xr.Dataset:
-    """
+    """Create windows on the dataset.
+
     Wrapper arround sgkit.window_by_[...].
     Size either in bp or number of variants depending on type.
+
+    Args:
+        ds: input dataset.
+        type: 'position' or 'variant'.
+            Create windows either using their position or using the variant number
+        size: size of each window, either in bp or number of variants depending on type.
+        min_variant_number: minimal number of variants to keep the window.
+            Windows with less than min_variant_number variants are discarded.
+
+    Returns:
+        xarray.Dataset: ds input with appended windowing variables.
+
+    Raises:
+        ValueError: if type is not 'position' or 'variant'.
     """
 
     if type not in {"position", "variant"}:
@@ -110,7 +136,7 @@ def window(
 
     # only keep windows with enough variants
     kept = np.where(
-        (ds.window_stop.values - ds.window_start.values) > min_variant_number
+        (ds.window_stop.values - ds.window_start.values) >= min_variant_number
     )[0]
     return ds.isel(windows=kept)
 
@@ -121,12 +147,27 @@ def _pcangsd_wrapper(
     *args,
     **kwargs,
 ) -> tuple[np.array, float, np.array, np.array]:
-    """
-    Wrapper around PCAngsd function returning a tuple
+    """Wrapper around PCAngsd functions
+
+    returning a tuple
     similar to what is returned by lostruct.eigen_windows.
 
-    gl: genotype likelihoods as formatted in the beagle_to_zarr output
-        i.e. (variants, samples, genotypes=3)
+    Args:
+        gl: genotype likelihoods as formatted in the beagle_to_zarr output
+            i.e. (variants, samples, genotypes=3)
+        k: number of PCs to retain.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+            Allows to pass pcangsd specific arguments.
+
+    Returns:
+        tuple:
+            (
+                covariance matrix,
+                total variance,
+                eigen values,
+                eigen vectors
+            )
     """
 
     L = gl[:, :, :-1].reshape(gl.shape[0], -1)
@@ -159,16 +200,32 @@ def _pcangsd_wrapper(
 
 
 def _create_save_pca_result(
-    res,
+    res: tuple[np.array, float, np.array, np.array],
     window_index,
     window_contigs,
     window_starts,
     window_stops,
     sample_id,
     attrs,
-    tmp_folder,
-    restart,
-):
+    tmp_folder: str,
+    restart: bool,
+) -> str:
+    """Saves the window pca result to file.
+
+    Args:
+        res: result of _pcangsd_wrapper.
+        window_index: index of the current window.
+        window_contigs: contig of the current window.
+        window_starts: start variant indexes of current window.
+        window_stops: stop variant indexes of current window.
+        sample_id: passed from original dataset.
+        attrs: passed from original dataset.
+        tmp_folder: path of temporary folder to use.
+        restart: should result be overwritten. Overwritten if False.
+
+    Returns:
+        str: path to the tmp window store.
+    """
     tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
     if (not restart) or (not os.path.exists(tmp_file)):
         window_ds = xr.Dataset(
@@ -209,7 +266,7 @@ def pca_window(
     scheduler: str = "threads",
     num_workers: Optional[int] = None,
     clean_tmp: bool = True,
-    restart: bool = True,
+    restart: bool = False,
     maf_iter: int = 200,
     maf_tole: float = 1e-4,
     n_eig: int = 0,
@@ -217,15 +274,36 @@ def pca_window(
     tole: float = 1e-5,
     pcangsd_threads: int = 1,
 ) -> np.array:
-    """
-    Run PCAngsd on each window.
-    Return results as np.array of objects (lostruct style).
+    """Run PCAngsd on each window.
 
-    Code modified from sgkit.window_statistic
+    Args:
+        ds: local_pcangsd dataset containing genotype likelihoods and windows.
+        zarr_store: path to store the local_pcangsd results.
+        output_chunksize: size of chunks for the xarray output.
+        k: number of PCs to retain in the output.
+            By default will keep all.
+        tmp_folder: folder to use to store temporary results.
+            Will be created if it does not exist. /tmp by default.
+        scheduler: dask single-machine scheduler to use.
+            'threads', 'processes' or 'synchronous'.
+        num_workers: dask number of workers to use.
+            Be careful to adapt pcangsd_threads and this argument accordingly.
+        clean_tmp: should the temporary folder by emptied?
+        restart: should the analysis be restarted using existing temporary files?
+            If False, will overwrite existing tmp files.
+        maf_iter: pcangsd maf_iter argument.
+        maf_tole: pcangsd maf_tole argument.
+        n_eig: pcangsd n_eig argument.
+        iter: pcangsd iter argument.
+        tole: pcangsd tole argument.
+        pcangsd_threads: pcangsd threads argument.
+            Be careful to adapt num_workers and this argument accordingly.
 
-    Arguments
-    -------------------
-    restart: do not overwrite tmp zarr file and continue, restarting the analysis in case of error.
+    Returns:
+        str: Path to the created zarr_store containing each window pcangsd.
+
+    Raises:
+        Exception: if window variables does not exist in ds.
     """
 
     if "window_start" not in ds or "window_stop" not in ds:
@@ -344,6 +422,14 @@ def pca_window(
 
 
 def to_lostruct(ds_pca: xr.Dataset) -> np.array:
+    """Converts the local_pcangsd result to lostruct format
+
+    Args:
+        ds_pca: local_pcangsd PCA result dataset.
+
+    Returns:
+        numpy.array: array in the lostruct format.
+    """
     vectors = ds_pca.vectors.values
     vals = ds_pca.vals.values
     C = ds_pca.C.values
@@ -366,8 +452,31 @@ def pcangsd_merged_windows(
     tole: float = 1e-5,
     pcangsd_threads: int = 1,
 ) -> tuple:
-    """
-    Compute PCAngsd on merged windows of interest.
+    """Compute PCAngsd on merged windows of interest.
+
+    Args:
+        ds: local_pcangsd dataset containing genotype likelihoods and windows.
+        windows_idx: indexes of windows to merge.
+        k: number of PCs to retain in the output.
+            By default will keep all.
+        maf_iter: pcangsd maf_iter argument.
+        maf_tole: pcangsd maf_tole argument.
+        n_eig: pcangsd n_eig argument.
+        iter: pcangsd iter argument.
+        tole: pcangsd tole argument.
+        pcangsd_threads: pcangsd threads argument.
+
+    Returns:
+        tuple:
+            (
+                covariance matrix,
+                total variance,
+                eigen values,
+                eigen vectors
+            )
+
+    Raises:
+        Exception: if the dataset do not have windows variables.
     """
 
     if "window_start" not in ds or "window_stop" not in ds:
