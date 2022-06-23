@@ -226,7 +226,10 @@ def _create_save_pca_result(
     Returns:
         str: path to the tmp window store.
     """
-    tmp_file = f"{tmp_folder}/contig{window_contigs[window_index]}:{window_starts[window_index]}-{window_stops[window_index]}.zarr"
+    tmp_file = (
+        f"{tmp_folder}/contig{window_contigs[window_index]}:"
+        f"{window_starts[window_index]}-{window_stops[window_index]}.zarr"
+    )
     if (not restart) or (not os.path.exists(tmp_file)):
         window_ds = xr.Dataset(
             data_vars={
