@@ -285,59 +285,6 @@ title="Open an issue"
 <section id="module-local_pcangsd">
 <span id="api"></span><h1>API<a class="headerlink" href="#module-local_pcangsd" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="local_pcangsd._create_save_pca_result">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">_create_save_pca_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_contigs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_starts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_stops</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd._create_save_pca_result" title="Permalink to this definition">#</a></dt>
-<dd><p>Saves the window pca result to file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>res</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>]) – result of _pcangsd_wrapper.</p></li>
-<li><p><strong>window_index</strong> – index of the current window.</p></li>
-<li><p><strong>window_contigs</strong> – contig of the current window.</p></li>
-<li><p><strong>window_starts</strong> – start variant indexes of current window.</p></li>
-<li><p><strong>window_stops</strong> – stop variant indexes of current window.</p></li>
-<li><p><strong>sample_id</strong> – passed from original dataset.</p></li>
-<li><p><strong>attrs</strong> – passed from original dataset.</p></li>
-<li><p><strong>tmp_folder</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path of temporary folder to use.</p></li>
-<li><p><strong>restart</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – should result be overwritten. Overwritten if False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>path to the tmp window store.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="local_pcangsd._pcangsd_wrapper">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">_pcangsd_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd._pcangsd_wrapper" title="Permalink to this definition">#</a></dt>
-<dd><p>Wrapper around PCAngsd functions</p>
-<p>returning a tuple
-similar to what is returned by lostruct.eigen_windows.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>gl</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>) – genotype likelihoods as formatted in the beagle_to_zarr output
-i.e. (variants, samples, genotypes=3)</p></li>
-<li><p><strong>k</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of PCs to retain.</p></li>
-<li><p><strong>*args</strong> – Variable length argument list.</p></li>
-<li><p><strong>**kwargs</strong> – Arbitrary keyword arguments.
-Allows to pass pcangsd specific arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(covariance matrix, total variance, eigen values, eigen vectors)</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="local_pcangsd.beagle_to_zarr">
 <span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">beagle_to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.beagle_to_zarr" title="Permalink to this definition">#</a></dt>
 <dd><p>Converts an ANGSD genotype likelihood dataset to a Zarr array on disk.</p>
@@ -372,16 +319,6 @@ Allows to pass pcangsd specific arguments.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xarray.Dataset</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="local_pcangsd.load_dataset">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.load_dataset" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 </dd>
 </dl>
 </dd></dl>

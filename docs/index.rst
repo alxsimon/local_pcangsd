@@ -18,8 +18,6 @@ API
 
 .. automodule:: local_pcangsd
    :members:
-   :undoc-members:
-   :private-members:
 
 Indices and tables
 ==================
