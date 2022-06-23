@@ -10,6 +10,8 @@ This module leverages the use of xarray to store and access genotype likelihoods
 
 Similarly, PCA results are stored as an xarray dataset for easy manipulation and storage.
 
+[**Documentation**](https://alxsimon.github.io/local_pcangsd)
+
 ## Install
 
 Requirements can be seen in the [`conda_env.yaml`](https://github.com/alxsimon/local_pcangsd/blob/main/conda_env.yaml) file.
