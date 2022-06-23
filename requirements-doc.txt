@@ -1,0 +1,4 @@
+sphinx>4,<=4.2.0
+sphinx_autodoc_typehints>=1.14.0
+sphinx-book-theme
+pydata-sphinx-theme
