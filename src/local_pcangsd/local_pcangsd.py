@@ -161,13 +161,7 @@ def _pcangsd_wrapper(
             Allows to pass pcangsd specific arguments.
 
     Returns:
-        tuple:
-            (
-                covariance matrix,
-                total variance,
-                eigen values,
-                eigen vectors
-            )
+        tuple: (covariance matrix, total variance, eigen values, eigen vectors)
     """
 
     L = gl[:, :, :-1].reshape(gl.shape[0], -1)
@@ -470,13 +464,7 @@ def pcangsd_merged_windows(
         pcangsd_threads: pcangsd threads argument.
 
     Returns:
-        tuple:
-            (
-                covariance matrix,
-                total variance,
-                eigen values,
-                eigen vectors
-            )
+        tuple: (covariance matrix, total variance, eigen values, eigen vectors)
 
     Raises:
         Exception: if the dataset do not have windows variables.
