@@ -20,7 +20,7 @@ DIM_PC = "PCs"
 DIM_WINDOW = "windows"
 
 
-def create_dataset(df: pd.DataFrame, contigs: list) -> xr.Dataset:
+def _create_dataset(df: pd.DataFrame, contigs: list) -> xr.Dataset:
     """Creates the genotype likelihood dataset from a chunk of dataframe.
 
     This is used to work on chunks in beagle_to_zarr.
@@ -91,15 +91,24 @@ def beagle_to_zarr(input: str, store: str, chunksize: int = 10000) -> None:
 
     df_chunked = pd.read_csv(input, sep="\t", chunksize=chunksize)
     for i, df in enumerate(df_chunked):
-        ds = create_dataset(df, contigs=contigs)
+        ds = _create_dataset(df, contigs=contigs)
         if i == 0:
             ds.to_zarr(store, mode="w")
         else:
             ds.to_zarr(store, append_dim="variants")
 
 
-def load_dataset(store: str, chunksize: int = 10000) -> xr.Dataset:
-    ds = xr.open_zarr(store, chunks=chunksize)
+def load_dataset(store: str, **kwargs) -> xr.Dataset:
+    """Wrapper around xarray.open_zarr
+
+    Args:
+        store: path to zarr store
+        **kwargs: keyword arguments passed to xarray.open_zarr
+    
+    Returns:
+        xarray.Dataset: the opened dataset
+    """
+    ds = xr.open_zarr(store, **kwargs)
     return ds
 
 

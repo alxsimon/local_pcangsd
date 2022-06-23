@@ -303,19 +303,18 @@ title="Open an issue"
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="local_pcangsd.create_dataset">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">create_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contigs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.create_dataset" title="Permalink to this definition">#</a></dt>
-<dd><p>Creates the genotype likelihood dataset from a chunk of dataframe.</p>
-<p>This is used to work on chunks in beagle_to_zarr.</p>
+<dt class="sig sig-object py" id="local_pcangsd.load_dataset">
+<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.load_dataset" title="Permalink to this definition">#</a></dt>
+<dd><p>Wrapper around xarray.open_zarr</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – pandas DataFrame (chunk of the beagle file)</p></li>
-<li><p><strong>contigs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>) – list of contig names</p></li>
+<li><p><strong>store</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path to zarr store</p></li>
+<li><p><strong>**kwargs</strong> – keyword arguments passed to xarray.open_zarr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>dataset of the chunk.</p>
+<dd class="field-even"><p>the opened dataset</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>xarray.Dataset</p>
