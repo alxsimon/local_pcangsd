@@ -11,5 +11,18 @@ Welcome to local_pcangsd's documentation!
    :caption: Contents:
 
 
-.. automodule:: fib
+API
+===
+
+.. currentmodule:: sgkit
+
+.. automodule:: local_pcangsd
    :members:
+   :undoc-members:
+   :private-members:
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`
