@@ -11,10 +11,5 @@ Welcome to local_pcangsd's documentation!
    :caption: Contents:
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. automodule:: fib
+   :members:
