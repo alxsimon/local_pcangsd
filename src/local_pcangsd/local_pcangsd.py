@@ -153,7 +153,6 @@ def window(
 def _pcangsd_wrapper(
     gl: np.array,
     k: int,
-    *args,
     **kwargs,
 ) -> tuple[np.array, float, np.array, np.array]:
     """Wrapper around PCAngsd functions
@@ -165,7 +164,6 @@ def _pcangsd_wrapper(
         gl: genotype likelihoods as formatted in the beagle_to_zarr output
             i.e. (variants, samples, genotypes=3)
         k: number of PCs to retain.
-        *args: Variable length argument list.
         **kwargs: Arbitrary keyword arguments.
             Allows to pass pcangsd specific arguments.
 
