@@ -104,7 +104,7 @@ def load_dataset(store: str, **kwargs) -> xr.Dataset:
     Args:
         store: path to zarr store
         **kwargs: keyword arguments passed to xarray.open_zarr
-    
+
     Returns:
         xarray.Dataset: the opened dataset
     """
