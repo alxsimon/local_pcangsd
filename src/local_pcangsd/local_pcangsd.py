@@ -446,7 +446,7 @@ def to_lostruct(ds_pca: xr.Dataset) -> np.array:
 
 
 def pcangsd_merged_windows(
-    ds,
+    ds: xr.Dataset,
     windows_idx: np.array,
     k: Optional[int] = None,
     maf_iter: int = 200,
