@@ -214,6 +214,18 @@ title="Open an issue"
   <a class="reference internal nav-link" href="#api">
    API
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#summary">
+     Summary
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#reference-documentation">
+     Reference documentation
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#indices-and-tables">
@@ -258,6 +270,18 @@ title="Open an issue"
   <a class="reference internal nav-link" href="#api">
    API
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#summary">
+     Summary
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#reference-documentation">
+     Reference documentation
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h1 nav-item toc-entry">
   <a class="reference internal nav-link" href="#indices-and-tables">
@@ -305,6 +329,37 @@ for more details.</p>
 </section>
 <section id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">#</a></h1>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">#</a></h2>
+<table class="longtable table autosummary">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#local_pcangsd.beagle_to_zarr" title="local_pcangsd.beagle_to_zarr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beagle_to_zarr</span></code></a>(input, store[, chunksize])</p></td>
+<td><p>Converts an ANGSD genotype likelihood dataset to a Zarr array on disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#local_pcangsd.load_dataset" title="local_pcangsd.load_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_dataset</span></code></a>(store, **kwargs)</p></td>
+<td><p>Wrapper around xarray.open_zarr</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#local_pcangsd.window" title="local_pcangsd.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(ds, type, size[, min_variant_number])</p></td>
+<td><p>Create windows on the dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#local_pcangsd.pca_window" title="local_pcangsd.pca_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pca_window</span></code></a>(ds, zarr_store[, ...])</p></td>
+<td><p>Run PCAngsd on each window.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#local_pcangsd.to_lostruct" title="local_pcangsd.to_lostruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_lostruct</span></code></a>(ds_pca)</p></td>
+<td><p>Converts the local_pcangsd result to lostruct format</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#local_pcangsd.pcangsd_merged_windows" title="local_pcangsd.pcangsd_merged_windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pcangsd_merged_windows</span></code></a>(ds, windows_idx[, k, ...])</p></td>
+<td><p>Compute PCAngsd on merged windows of interest.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reference-documentation">
+<h2>Reference documentation<a class="headerlink" href="#reference-documentation" title="Permalink to this headline">#</a></h2>
 <p>Details on functions and their arguments.</p>
 <span class="target" id="module-local_pcangsd"></span><dl class="py function">
 <dt class="sig sig-object py" id="local_pcangsd.beagle_to_zarr">
@@ -346,14 +401,14 @@ for more details.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="local_pcangsd.pca_window">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">pca_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_chunsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/tmp_local_pcangsd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threads'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_tmp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcangsd_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.pca_window" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">pca_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/tmp_local_pcangsd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threads'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_tmp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcangsd_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.pca_window" title="Permalink to this definition">#</a></dt>
 <dd><p>Run PCAngsd on each window.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ds</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
 <li><p><strong>zarr_store</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path to store the local_pcangsd results.</p></li>
-<li><p><strong>output_chunksize</strong> – size of chunks for the xarray output.</p></li>
+<li><p><strong>output_chunksize</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – size of chunks for the xarray output.</p></li>
 <li><p><strong>k</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – number of PCs to retain in the output.
 By default will keep all.</p></li>
 <li><p><strong>tmp_folder</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – folder to use to store temporary results.
@@ -393,7 +448,7 @@ Be careful to adapt num_workers and this argument accordingly.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
+<li><p><strong>ds</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
 <li><p><strong>windows_idx</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>) – indexes of windows to merge.</p></li>
 <li><p><strong>k</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – number of PCs to retain in the output.
 By default will keep all.</p></li>
@@ -463,6 +518,7 @@ Windows with less than min_variant_number variants are discarded.</p></li>
 </dl>
 </dd></dl>
 
+</section>
 </section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>

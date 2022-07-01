@@ -264,7 +264,7 @@ def _create_save_pca_result(
 def pca_window(
     ds: xr.Dataset,
     zarr_store: str,
-    output_chunsize: int = 10000,
+    output_chunksize: int = 10000,
     k: Optional[int] = None,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
     scheduler: str = "threads",
@@ -413,7 +413,7 @@ def pca_window(
 
     ds_pca = xr.open_mfdataset(
         zarr_list, combine="nested", concat_dim="windows", engine="zarr"
-    ).chunk({"windows": output_chunsize})
+    ).chunk({"windows": output_chunksize})
     to_store = ds_pca.copy()
     for var in to_store.variables:
         to_store[var].encoding.clear()
