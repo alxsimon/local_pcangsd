@@ -39,6 +39,24 @@ for more details.
 API
 ===
 
+Summary
+-------
+
+.. currentmodule:: local_pcangsd
+
+.. autosummary::
+
+   beagle_to_zarr
+   load_dataset
+   window
+   pca_window
+   to_lostruct
+   pcangsd_merged_windows
+
+
+Reference documentation
+-----------------------
+
 Details on functions and their arguments.
 
 .. automodule:: local_pcangsd

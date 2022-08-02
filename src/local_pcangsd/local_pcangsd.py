@@ -266,7 +266,7 @@ def _create_save_pca_result(
 def pca_window(
     ds: xr.Dataset,
     zarr_store: str,
-    output_chunsize: int = 10000,
+    output_chunksize: int = 10000,
     k: Optional[int] = None,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
     scheduler: str = "threads",
@@ -458,7 +458,7 @@ def to_lostruct(ds_pca: xr.Dataset) -> np.array:
 
 
 def pcangsd_merged_windows(
-    ds,
+    ds: xr.Dataset,
     windows_idx: np.array,
     k: Optional[int] = None,
     maf_iter: int = 200,
