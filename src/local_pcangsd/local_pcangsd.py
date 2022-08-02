@@ -12,6 +12,9 @@ import contextlib
 from typing import Optional
 import shutil
 
+import io
+from contextlib import redirect_stdout
+
 DIM_VARIANT = "variants"
 DIM_SAMPLE = "samples"
 DIM_ALLELE = "alleles"
@@ -186,11 +189,8 @@ def _pcangsd_wrapper(
         t=kwargs["threads"],
     )
 
-    with open(os.devnull, "w") as devnull:
-        with contextlib.redirect_stdout(devnull):
-            # hide messages from Pcangsd
-            f = shared.emMAF(L, **args_emMAF)
-            C, P, _ = covariance.emPCA(L, f, **args_emPCA)
+    f = shared.emMAF(L, **args_emMAF)
+    C, P, _ = covariance.emPCA(L, f, **args_emPCA)
     C = C.astype(np.float32)
     vals, vectors = np.linalg.eig(C)
     vals = vals.astype(np.float32)
@@ -209,7 +209,7 @@ def _create_save_pca_result(
     sample_id,
     attrs,
     tmp_folder: str,
-    restart: bool,
+    overwrite: bool=True,
 ) -> str:
     """Saves the window pca result to file.
 
@@ -222,7 +222,7 @@ def _create_save_pca_result(
         sample_id: passed from original dataset.
         attrs: passed from original dataset.
         tmp_folder: path of temporary folder to use.
-        restart: should result be overwritten. Overwritten if False.
+        overwrite: should result be overwritten. Default to True.
 
     Returns:
         str: path to the tmp window store.
@@ -231,7 +231,7 @@ def _create_save_pca_result(
         f"{tmp_folder}/contig{window_contigs[window_index]}:"
         f"{window_starts[window_index]}-{window_stops[window_index]}.zarr"
     )
-    if (not restart) or (not os.path.exists(tmp_file)):
+    if (overwrite) or (not os.path.exists(tmp_file)):
         window_ds = xr.Dataset(
             data_vars={
                 "sample_id": ([DIM_SAMPLE], sample_id),
@@ -258,6 +258,8 @@ def _create_save_pca_result(
             attrs=attrs,
         )
         window_ds.to_zarr(tmp_file, mode="w")
+    elif os.path.exists(tmp_file):
+        print(f"{tmp_file} already exists and overwrite={overwrite}, leaving as is.")
     return tmp_file
 
 
@@ -270,7 +272,7 @@ def pca_window(
     scheduler: str = "threads",
     num_workers: Optional[int] = None,
     clean_tmp: bool = True,
-    restart: bool = False,
+    overwrite: bool = True,
     maf_iter: int = 200,
     maf_tole: float = 1e-4,
     n_eig: int = 0,
@@ -287,14 +289,13 @@ def pca_window(
         k: number of PCs to retain in the output.
             By default will keep all.
         tmp_folder: folder to use to store temporary results.
-            Will be created if it does not exist. /tmp by default.
+            Will be created if it does not exist. '/tmp/tmp_local_pcangsd' by default.
         scheduler: dask single-machine scheduler to use.
             'threads', 'processes' or 'synchronous'.
         num_workers: dask number of workers to use.
             Be careful to adapt pcangsd_threads and this argument accordingly.
         clean_tmp: should the temporary folder by emptied?
-        restart: should the analysis be restarted using existing temporary files?
-            If False, will overwrite existing tmp files.
+        overwrite: should tmp files be overwritten? Default to True.
         maf_iter: pcangsd maf_iter argument.
         maf_tole: pcangsd maf_tole argument.
         n_eig: pcangsd n_eig argument.
@@ -357,70 +358,81 @@ def pca_window(
 
     chunk_offsets = _sizes_to_start_offsets(windows_per_chunk)
 
-    if not os.path.exists(tmp_folder):
-        os.mkdir(tmp_folder)
+    try:
+        if not os.path.exists(tmp_folder):
+            os.mkdir(tmp_folder)
 
-    def blockwise_moving_stat(x: np.array, block_info=None):
-        if block_info is None or len(block_info) == 0:
-            return np.array([])
-        chunk_number = block_info[0]["chunk-location"][0]
-        chunk_offset_start = chunk_offsets[chunk_number]
-        chunk_offset_stop = chunk_offsets[chunk_number + 1]
-        chunk_window_starts = rel_window_starts[chunk_offset_start:chunk_offset_stop]
-        chunk_window_stops = rel_window_stops[chunk_offset_start:chunk_offset_stop]
-        zarr_list = []
-        window_index = windows_per_chunk[
-            :chunk_number
-        ].sum()  # number of windows in all previous chunks
-        for i, j in zip(chunk_window_starts, chunk_window_stops):
-            res_ij = _pcangsd_wrapper(
-                x[i:j],
-                k=k,
-                **args_pcangsd,
+        def blockwise_moving_stat(x: np.array, block_info=None):
+            if block_info is None or len(block_info) == 0:
+                return np.array([])
+            chunk_number = block_info[0]["chunk-location"][0]
+            chunk_offset_start = chunk_offsets[chunk_number]
+            chunk_offset_stop = chunk_offsets[chunk_number + 1]
+            chunk_window_starts = rel_window_starts[chunk_offset_start:chunk_offset_stop]
+            chunk_window_stops = rel_window_stops[chunk_offset_start:chunk_offset_stop]
+            zarr_list = []
+            window_index = windows_per_chunk[
+                :chunk_number
+            ].sum()  # number of windows in all previous chunks
+            for i, j in zip(chunk_window_starts, chunk_window_stops):
+                res_ij = _pcangsd_wrapper(
+                    x[i:j],
+                    k=k,
+                    **args_pcangsd,
+                )
+                tmp_file = _create_save_pca_result(
+                    res_ij,
+                    window_index,
+                    window_contigs,
+                    window_starts,
+                    window_stops,
+                    ds.sample_id.values,
+                    ds.attrs,
+                    tmp_folder,
+                    overwrite,
+                )
+                zarr_list.append(tmp_file)
+                window_index += 1
+            return np.array(zarr_list, dtype=object)
+
+        map_depth = {0: depth}
+
+        result = values.map_overlap(
+            blockwise_moving_stat,
+            depth=map_depth,
+            dtype=object,
+            chunks=(1,),
+            drop_axis=(1, 2),
+            boundary=0,
+            trim=False,
+        )
+
+        with redirect_stdout(None):
+            zarr_list = result.compute(
+                scheduler=scheduler,
+                num_workers=num_workers,
+                threads_per_worker=1,
             )
-            tmp_file = _create_save_pca_result(
-                res_ij,
-                window_index,
-                window_contigs,
-                window_starts,
-                window_stops,
-                ds.sample_id.values,
-                ds.attrs,
-                tmp_folder,
-                restart,
-            )
-            zarr_list.append(tmp_file)
-            window_index += 1
-        return np.array(zarr_list, dtype=object)
 
-    map_depth = {0: depth}
+        ds_pca = xr.open_mfdataset(
+            zarr_list,
+            combine="nested",
+            concat_dim="windows",
+            engine="zarr",
+            data_vars='minimal',
+            parallel=True,
+        ).chunk({"windows": output_chunsize})
+        to_store = ds_pca.copy()
+        for var in to_store:
+            to_store[var].encoding.clear()
+        max_len_names = max([len(x) for x in ds_pca.sample_id.values])
+        to_store['sample_id'] = to_store['sample_id'].astype(f"U{max_len_names}")
 
-    result = values.map_overlap(
-        blockwise_moving_stat,
-        depth=map_depth,
-        dtype=object,
-        chunks=(1,),
-        drop_axis=(1, 2),
-        boundary=0,
-        trim=False,
-    )
-
-    zarr_list = result.compute(
-        scheduler=scheduler,
-        num_workers=num_workers,
-        threads_per_worker=1,
-    )
-
-    ds_pca = xr.open_mfdataset(
-        zarr_list, combine="nested", concat_dim="windows", engine="zarr"
-    ).chunk({"windows": output_chunsize})
-    to_store = ds_pca.copy()
-    for var in to_store.variables:
-        to_store[var].encoding.clear()
-    to_store.to_zarr(zarr_store, mode="w")
-
-    if clean_tmp:
-        shutil.rmtree(tmp_folder, ignore_errors=True)
+        to_store.to_zarr(zarr_store, mode="w")
+    
+    finally:
+        if clean_tmp:
+            shutil.rmtree(tmp_folder, ignore_errors=True)
 
     return zarr_store
 

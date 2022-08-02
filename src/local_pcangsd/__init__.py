@@ -6,5 +6,6 @@ from .local_pcangsd import (
     pca_window,
     to_lostruct,
     pcangsd_merged_windows,
+    _pcangsd_wrapper,
+    _create_save_pca_result,
 )
-from .corners import corners

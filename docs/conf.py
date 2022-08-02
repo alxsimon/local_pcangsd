@@ -12,6 +12,9 @@
 #
 import os
 import sys
+import dask.dataframe
+import xarray
+
 sys.path.insert(0, os.path.abspath('../src/local_pcangsd'))
 
 
@@ -33,6 +36,8 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.githubpages",
+    "sphinx.ext.intersphinx",
+    "scanpydoc",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -43,6 +48,22 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+
+# FIXME: Workaround for linking xarray module
+# For some reason, intersphinx is not able to to link xarray objects.
+# https://github.com/pydata/xarray/issues/4279
+xarray.Dataset.__module__ = "xarray"
+xarray.DataArray.__module__ = "xarray"
+
+dask.dataframe.DataFrame.__module__ = "dask.dataframe"
+intersphinx_mapping = dict(
+    dask=("https://docs.dask.org/en/stable/", None),
+    xarray=("https://xarray.pydata.org/en/stable/", None),
+    zarr=("https://zarr.readthedocs.io/en/stable", None),
+    numpy=("https://numpy.org/doc/stable/", None),
+    python=("https://docs.python.org/3", None),
+    # add sgkit
+)
 
 # -- Options for HTML output -------------------------------------------------
 
