@@ -368,13 +368,13 @@ for more details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path to a genotype likelihood file in beagle format produced by ANGSD.</p></li>
-<li><p><strong>store</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – output file on disk to store the dataset as a zarr file, ex: “output.zarr”.</p></li>
-<li><p><strong>chunksize</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – size of each chunk in the variant dimension.</p></li>
+<li><p><strong>input</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to a genotype likelihood file in beagle format produced by ANGSD.</p></li>
+<li><p><strong>store</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – output file on disk to store the dataset as a zarr file, ex: “output.zarr”.</p></li>
+<li><p><strong>chunksize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – size of each chunk in the variant dimension.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -386,7 +386,7 @@ for more details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path to zarr store</p></li>
+<li><p><strong>store</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to zarr store</p></li>
 <li><p><strong>**kwargs</strong> – keyword arguments passed to xarray.open_zarr</p></li>
 </ul>
 </dd>
@@ -394,38 +394,37 @@ for more details.</p>
 <dd class="field-even"><p>the opened dataset</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>xarray.Dataset</p>
+<dd class="field-odd"><p><a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)">xarray.Dataset</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="local_pcangsd.pca_window">
-<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">pca_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/tmp_local_pcangsd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threads'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_tmp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcangsd_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.pca_window" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">local_pcangsd.</span></span><span class="sig-name descname"><span class="pre">pca_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/tmp/tmp_local_pcangsd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'threads'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_tmp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maf_tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_eig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tole</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pcangsd_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#local_pcangsd.pca_window" title="Permalink to this definition">#</a></dt>
 <dd><p>Run PCAngsd on each window.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
-<li><p><strong>zarr_store</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – path to store the local_pcangsd results.</p></li>
-<li><p><strong>output_chunksize</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – size of chunks for the xarray output.</p></li>
-<li><p><strong>k</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – number of PCs to retain in the output.
+<li><p><strong>ds</strong> (<a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
+<li><p><strong>zarr_store</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to store the local_pcangsd results.</p></li>
+<li><p><strong>output_chunksize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – size of chunks for the xarray output.</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of PCs to retain in the output.
 By default will keep all.</p></li>
-<li><p><strong>tmp_folder</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – folder to use to store temporary results.
-Will be created if it does not exist. /tmp by default.</p></li>
-<li><p><strong>scheduler</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – dask single-machine scheduler to use.
+<li><p><strong>tmp_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – folder to use to store temporary results.
+Will be created if it does not exist. ‘/tmp/tmp_local_pcangsd’ by default.</p></li>
+<li><p><strong>scheduler</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – dask single-machine scheduler to use.
 ‘threads’, ‘processes’ or ‘synchronous’.</p></li>
-<li><p><strong>num_workers</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – dask number of workers to use.
+<li><p><strong>num_workers</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – dask number of workers to use.
 Be careful to adapt pcangsd_threads and this argument accordingly.</p></li>
-<li><p><strong>clean_tmp</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – should the temporary folder by emptied?</p></li>
-<li><p><strong>restart</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – should the analysis be restarted using existing temporary files?
-If False, will overwrite existing tmp files.</p></li>
-<li><p><strong>maf_iter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd maf_iter argument.</p></li>
-<li><p><strong>maf_tole</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – pcangsd maf_tole argument.</p></li>
-<li><p><strong>n_eig</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd n_eig argument.</p></li>
-<li><p><strong>iter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd iter argument.</p></li>
-<li><p><strong>tole</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – pcangsd tole argument.</p></li>
-<li><p><strong>pcangsd_threads</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd threads argument.
+<li><p><strong>clean_tmp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – should the temporary folder by emptied?</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – should tmp files be overwritten? Default to True.</p></li>
+<li><p><strong>maf_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd maf_iter argument.</p></li>
+<li><p><strong>maf_tole</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – pcangsd maf_tole argument.</p></li>
+<li><p><strong>n_eig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd n_eig argument.</p></li>
+<li><p><strong>iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd iter argument.</p></li>
+<li><p><strong>tole</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – pcangsd tole argument.</p></li>
+<li><p><strong>pcangsd_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd threads argument.
 Be careful to adapt num_workers and this argument accordingly.</p></li>
 </ul>
 </dd>
@@ -433,10 +432,10 @@ Be careful to adapt num_workers and this argument accordingly.</p></li>
 <dd class="field-even"><p>Path to the created zarr_store containing each window pcangsd.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>Exception</strong> – if window variables does not exist in ds.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><strong>Exception</strong></a> – if window variables does not exist in ds.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -448,26 +447,26 @@ Be careful to adapt num_workers and this argument accordingly.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
+<li><p><strong>ds</strong> (<a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – local_pcangsd dataset containing genotype likelihoods and windows.</p></li>
 <li><p><strong>windows_idx</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>) – indexes of windows to merge.</p></li>
-<li><p><strong>k</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – number of PCs to retain in the output.
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of PCs to retain in the output.
 By default will keep all.</p></li>
-<li><p><strong>maf_iter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd maf_iter argument.</p></li>
-<li><p><strong>maf_tole</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – pcangsd maf_tole argument.</p></li>
-<li><p><strong>n_eig</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd n_eig argument.</p></li>
-<li><p><strong>iter</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd iter argument.</p></li>
-<li><p><strong>tole</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – pcangsd tole argument.</p></li>
-<li><p><strong>pcangsd_threads</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – pcangsd threads argument.</p></li>
+<li><p><strong>maf_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd maf_iter argument.</p></li>
+<li><p><strong>maf_tole</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – pcangsd maf_tole argument.</p></li>
+<li><p><strong>n_eig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd n_eig argument.</p></li>
+<li><p><strong>iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd iter argument.</p></li>
+<li><p><strong>tole</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – pcangsd tole argument.</p></li>
+<li><p><strong>pcangsd_threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – pcangsd threads argument.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>(covariance matrix, total variance, eigen values, eigen vectors)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>Exception</strong> – if the dataset do not have windows variables.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.10)"><strong>Exception</strong></a> – if the dataset do not have windows variables.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -478,7 +477,7 @@ By default will keep all.</p></li>
 <dd><p>Converts the local_pcangsd result to lostruct format</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ds_pca</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – local_pcangsd PCA result dataset.</p>
+<dd class="field-odd"><p><strong>ds_pca</strong> (<a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – local_pcangsd PCA result dataset.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>array in the lostruct format.</p>
@@ -498,11 +497,11 @@ Size either in bp or number of variants depending on type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code>) – input dataset.</p></li>
-<li><p><strong>type</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – ‘position’ or ‘variant’.
+<li><p><strong>ds</strong> (<a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – input dataset.</p></li>
+<li><p><strong>type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – ‘position’ or ‘variant’.
 Create windows either using their position or using the variant number</p></li>
-<li><p><strong>size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – size of each window, either in bp or number of variants depending on type.</p></li>
-<li><p><strong>min_variant_number</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – minimal number of variants to keep the window.
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – size of each window, either in bp or number of variants depending on type.</p></li>
+<li><p><strong>min_variant_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – minimal number of variants to keep the window.
 Windows with less than min_variant_number variants are discarded.</p></li>
 </ul>
 </dd>
@@ -510,10 +509,10 @@ Windows with less than min_variant_number variants are discarded.</p></li>
 <dd class="field-even"><p>ds input with appended windowing variables.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>xarray.Dataset</p>
+<dd class="field-odd"><p><a class="reference external" href="https://xarray.pydata.org/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2022.6.1.dev0)">xarray.Dataset</a></p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – if type is not ‘position’ or ‘variant’.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – if type is not ‘position’ or ‘variant’.</p>
 </dd>
 </dl>
 </dd></dl>
