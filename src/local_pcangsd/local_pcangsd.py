@@ -421,7 +421,7 @@ def pca_window(
             engine="zarr",
             data_vars='minimal',
             parallel=True,
-        ).chunk({"windows": output_chunsize})
+        ).chunk({"windows": output_chunksize})
         to_store = ds_pca.copy()
         for var in to_store:
             to_store[var].encoding.clear()
