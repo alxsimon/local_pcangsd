@@ -1,6 +1,7 @@
 # Local PCAngsd
 
 [![Documentation](https://img.shields.io/badge/-Documentation-blue)](https://alxsimon.github.io/local_pcangsd)
+[![License](https://img.shields.io/github/license/alxsimon/local_pcangsd)](https://github.com/alxsimon/local_pcangsd/LICENCE.txt)
 
 The objective of this python module is to combine [PCAngsd](https://github.com/Rosemeis/pcangsd) with [lostruct](https://github.com/jguhlin/lostruct-py)
 to analyse low-coverage data (genotype likelihoods) with local PCA.
