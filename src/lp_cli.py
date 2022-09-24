@@ -22,6 +22,10 @@ parser.add_argument(
     help="Zarr file for storing genotype likelihoods. Can be an input or intermediate output.",
 )
 parser.add_argument(
+    "--overwrite-zarr", action="store_true", help="Overwrite already existing zarr store.",
+    dest="overwrite_zarr",
+)
+parser.add_argument(
     "-o", "--output", metavar="FILE", help="Zarr output file of the PCA results."
 )
 parser.add_argument(
@@ -33,7 +37,11 @@ def main():
     args = parser.parse_args()
 
     if os.path.exists(args.zarr):
-        print("zarr file already exists, will use it as input.")
+        if args.overwrite_zarr:
+            lp.beagle_to_zarr(input=args.beagle, store=args.zarr, chunksize=args.chunksize)
+        else:
+            print("zarr file already exists, will use it as input.")
+            print("Use option --overwrite-zarr to force its re-creation.")
     else:
         lp.beagle_to_zarr(input=args.beagle, store=args.zarr, chunksize=args.chunksize)
 
