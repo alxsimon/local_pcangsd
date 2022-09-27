@@ -7,7 +7,7 @@ The objective of this python module is to combine [PCAngsd](https://github.com/R
 to analyse low-coverage data (genotype likelihoods) with local PCA.
 
 Genotype likelihood files can be large and will often not fit into memory.
-This module leverages the use of xarray to store and access genotype likelihoods on disk, in a data structure comparable to [`sgkit`](https://pystatgen.github.io/sgkit/latest/).
+This module leverages the use of [Xarray](https://xarray.dev/) to store and access genotype likelihoods on disk, in a data structure comparable to [`sgkit`](https://pystatgen.github.io/sgkit/latest/).
 
 Similarly, PCA results are stored as an xarray dataset for easy manipulation and storage.
 
@@ -19,8 +19,7 @@ The easiest way to install local_pcangsd and its dependencies is through conda:
 
 ```bash
 conda env create -f conda_env.yaml
-# OR
-mamba env create -f conda_env.yaml
+# OR mamba env create -f conda_env.yaml
 conda activate local_pcangsd
 git clone https://github.com/alxsimon/local_pcangsd.git
 pip install ./local_pcangsd
