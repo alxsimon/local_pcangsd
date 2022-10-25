@@ -37,7 +37,6 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
-    "scanpydoc",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
