@@ -422,6 +422,11 @@ def pca_window(
             data_vars='minimal',
             parallel=True,
         ).chunk({"windows": output_chunksize})
+        # transfer variant info to pca dataset
+        ds_pca['variant_position'] = ds.variant_position
+        ds_pca['variant_contig'] = ds.variant_contig
+        ds_pca['variant_contig_name'] = ds.variant_contig_name
+
         to_store = ds_pca.copy()
         for var in to_store:
             to_store[var].encoding.clear()
