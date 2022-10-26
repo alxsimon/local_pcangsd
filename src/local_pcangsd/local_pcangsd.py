@@ -430,8 +430,11 @@ def pca_window(
         to_store = ds_pca.copy()
         for var in to_store:
             to_store[var].encoding.clear()
-        max_len_names = max([len(x) for x in ds_pca.sample_id.values])
-        to_store['sample_id'] = to_store['sample_id'].astype(f"U{max_len_names}")
+        # sanitize string types for storing
+        max_len_names_samples = max([len(x) for x in ds_pca.sample_id.values])
+        to_store['sample_id'] = to_store['sample_id'].astype(f"U{max_len_names_samples}")
+        max_len_names_contigs = max([len(x) for x in ds_pca.variant_contig_name.values])
+        to_store['variant_contig_name'] = to_store['variant_contig_name'].astype(f"U{max_len_names_contigs}")
 
         to_store.to_zarr(zarr_store, mode="w")
     
