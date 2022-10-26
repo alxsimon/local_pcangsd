@@ -529,3 +529,30 @@ def pcangsd_merged_windows(
         )
 
     return result_pca
+
+
+def get_window_center(
+    ds: xr.Dataset,
+) -> np.array:
+    """Estimate the center position of each window, useful for plotting.
+
+    Args:
+        ds: an Dataset with windows
+
+    Returns:
+        numpy.array: Array of window center position
+
+    Raises:
+        Exception if the Dataset does not contain windows
+    """
+
+    if "window_start" not in ds or "window_stop" not in ds:
+        raise Exception(
+            "Variables 'window_start' and 'window_stop' not defined in the Dataset."
+        )
+
+    pos_start = ds.variant_position.values[ds.window_start]
+    pos_stop = ds.variant_position.values[ds.window_stop.values - 1]
+    window_center = pos_start + (pos_stop - pos_start)/2
+
+    return window_center
