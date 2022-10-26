@@ -446,14 +446,14 @@ def pca_window(
     return zarr_store
 
 
-def to_lostruct(ds_pca: xr.Dataset) -> np.array:
+def to_lostruct(ds_pca: xr.Dataset) -> np.ndarray:
     """Converts the local_pcangsd result to lostruct format
 
     Args:
         ds_pca: local_pcangsd PCA result dataset.
 
     Returns:
-        numpy.array: array in the lostruct format.
+        numpy.ndarray: array in the lostruct format.
     """
     vectors = ds_pca.vectors.values
     vals = ds_pca.vals.values
@@ -533,17 +533,17 @@ def pcangsd_merged_windows(
 
 def get_window_center(
     ds: xr.Dataset,
-) -> np.array:
+) -> np.ndarray:
     """Estimate the center position of each window, useful for plotting.
 
     Args:
-        ds: an Dataset with windows
+        ds: Dataset with windows
 
     Returns:
-        numpy.array: Array of window center position
+        numpy.ndarray: Array of window center position
 
     Raises:
-        Exception if the Dataset does not contain windows
+        Exception: if the Dataset does not contain windows
     """
 
     if "window_start" not in ds or "window_stop" not in ds:

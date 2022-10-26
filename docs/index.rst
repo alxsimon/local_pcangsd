@@ -49,6 +49,7 @@ Summary
    beagle_to_zarr
    load_dataset
    window
+   get_window_center
    pca_window
    to_lostruct
    pcangsd_merged_windows
