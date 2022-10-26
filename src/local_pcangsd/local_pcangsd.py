@@ -436,6 +436,7 @@ def pca_window(
         max_len_names_contigs = max([len(x) for x in ds_pca.variant_contig_name.values])
         to_store['variant_contig_name'] = to_store['variant_contig_name'].astype(f"U{max_len_names_contigs}")
 
+        to_store = to_store.chunk(output_chunksize)
         to_store.to_zarr(zarr_store, mode="w")
     
     finally:
