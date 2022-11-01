@@ -266,7 +266,7 @@ def _create_save_pca_result(
 def pca_window(
     ds: xr.Dataset,
     zarr_store: str,
-    output_chunksize: int = 10000,
+    output_chunks: dict = {'windows': 100, 'variants': 10000},
     k: Optional[int] = None,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
     scheduler: str = "threads",
@@ -285,7 +285,7 @@ def pca_window(
     Args:
         ds: local_pcangsd dataset containing genotype likelihoods and windows.
         zarr_store: path to store the local_pcangsd results.
-        output_chunksize: size of chunks for the xarray output.
+        output_chunks: size of chunks for the xarray output.
         k: number of PCs to retain in the output.
             By default will keep all.
         tmp_folder: folder to use to store temporary results.
@@ -421,7 +421,7 @@ def pca_window(
             engine="zarr",
             data_vars='minimal',
             parallel=True,
-        ).chunk(output_chunksize)
+        ).chunk(output_chunks)
         # transfer variant info to pca dataset
         ds_pca['variant_position'] = ds.variant_position
         ds_pca['variant_contig'] = ds.variant_contig
@@ -436,7 +436,7 @@ def pca_window(
         max_len_names_contigs = max([len(x) for x in ds_pca.variant_contig_name.values])
         to_store['variant_contig_name'] = to_store['variant_contig_name'].astype(f"U{max_len_names_contigs}")
 
-        to_store = to_store.chunk(output_chunksize)
+        to_store = to_store.chunk(output_chunks)
         to_store.to_zarr(zarr_store, mode="w")
     
     finally:
