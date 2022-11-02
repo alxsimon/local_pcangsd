@@ -421,7 +421,7 @@ def pca_window(
             engine="zarr",
             data_vars='minimal',
             parallel=True,
-        ).chunk(output_chunks)
+        )
         # transfer variant info to pca dataset
         ds_pca['variant_position'] = ds.variant_position
         ds_pca['variant_contig'] = ds.variant_contig
