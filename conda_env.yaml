@@ -21,6 +21,7 @@ dependencies:
   - ipykernel
   - pip
   - jax
+  - jupyter
   - pip:
     - git+https://github.com/Rosemeis/pcangsd.git
     - git+https://github.com/jguhlin/lostruct-py.git

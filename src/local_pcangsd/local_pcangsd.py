@@ -37,7 +37,7 @@ def _create_dataset(df: pd.DataFrame, contigs: list) -> xr.Dataset:
     """
     sample_id = np.array(df.columns[range(3, df.shape[1], 3)])
 
-    variants = df.marker.str.rsplit("_", 1, expand=True)
+    variants = df.marker.str.rsplit(pat="_", n=1, expand=True)
     variants.columns = ["contig", "position"]
 
     flat_gl = df.iloc[:, 3:].to_numpy(dtype=np.float64)
@@ -265,7 +265,7 @@ def _create_save_pca_result(
 
 def pca_window(
     ds: xr.Dataset,
-    zarr_store: str,
+    store: str,
     output_chunks: dict = {'windows': 100, 'variants': 10000},
     k: Optional[int] = None,
     tmp_folder: str = "/tmp/tmp_local_pcangsd",
@@ -284,7 +284,7 @@ def pca_window(
 
     Args:
         ds: local_pcangsd dataset containing genotype likelihoods and windows.
-        zarr_store: path to store the local_pcangsd results.
+        store: path to store the local_pcangsd results.
         output_chunks: size of chunks for the xarray output.
         k: number of PCs to retain in the output.
             By default will keep all.
@@ -437,13 +437,13 @@ def pca_window(
         to_store['variant_contig_name'] = to_store['variant_contig_name'].astype(f"U{max_len_names_contigs}")
 
         to_store = to_store.chunk(output_chunks)
-        to_store.to_zarr(zarr_store, mode="w")
+        to_store.to_zarr(store, mode="w")
     
     finally:
         if clean_tmp:
             shutil.rmtree(tmp_folder, ignore_errors=True)
 
-    return zarr_store
+    return store
 
 
 def to_lostruct(ds_pca: xr.Dataset) -> np.ndarray:
