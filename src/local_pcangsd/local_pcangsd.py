@@ -7,6 +7,7 @@ import dask
 from sgkit.window import _get_chunked_windows, _sizes_to_start_offsets
 from pcangsd import shared
 from pcangsd import covariance
+from pcangsd import reader_cy
 import os
 import contextlib
 from typing import Optional
@@ -182,6 +183,7 @@ def _pcangsd_wrapper(
         tole=kwargs["maf_tole"],
         t=kwargs["threads"],
     )
+    min_maf=kwargs["min_maf"]
     args_emPCA = dict(
         e=kwargs["n_eig"],
         iter=kwargs["iter"],
@@ -190,13 +192,21 @@ def _pcangsd_wrapper(
     )
 
     f = shared.emMAF(L, **args_emMAF)
+
+    # Filtering (MAF)
+    if min_maf > 0.0:
+        mask_maf = (f >= min_maf) & (f <= (1 - min_maf))
+        L = L[mask_maf]
+        f = f[mask_maf]
+    else:
+        mask_maf = ~np.zeros((f.size,), dtype=bool)
+
     C, P, _ = covariance.emPCA(L, f, **args_emPCA)
     C = C.astype(np.float32)
     vals, vectors = np.linalg.eig(C)
     vals = vals.astype(np.float32)
     vectors = vectors.astype(np.float32)
     total_variance = np.sum(vals)
-    # total_variance = np.sum(np.power(C, 2).flatten())
     return C, total_variance, vals[:k], vectors[:, :k].T
 
 
@@ -273,6 +283,7 @@ def pca_window(
     num_workers: Optional[int] = None,
     clean_tmp: bool = True,
     overwrite: bool = True,
+    min_maf: float = .05,
     maf_iter: int = 200,
     maf_tole: float = 1e-4,
     n_eig: int = 0,
@@ -294,8 +305,9 @@ def pca_window(
             'threads', 'processes' or 'synchronous'.
         num_workers: dask number of workers to use.
             Be careful to adapt pcangsd_threads and this argument accordingly.
-        clean_tmp: should the temporary folder by emptied?
+        clean_tmp: should the temporary folder by emptied? Useful for debugging.
         overwrite: should tmp files be overwritten? Default to True.
+        min_maf: pcangsd minMaf. Minimum allele frequency of sites to consider.
         maf_iter: pcangsd maf_iter argument.
         maf_tole: pcangsd maf_tole argument.
         n_eig: pcangsd n_eig argument.
@@ -320,6 +332,7 @@ def pca_window(
         k = ds.dims["samples"]
 
     args_pcangsd = dict(
+        min_maf=min_maf,
         maf_iter=maf_iter,
         maf_tole=maf_tole,
         n_eig=n_eig,
@@ -470,6 +483,7 @@ def pcangsd_merged_windows(
     ds: xr.Dataset,
     windows_idx: np.array,
     k: Optional[int] = None,
+    min_maf: float = .05,
     maf_iter: int = 200,
     maf_tole: float = 1e-4,
     n_eig: int = 0,
@@ -484,6 +498,7 @@ def pcangsd_merged_windows(
         windows_idx: indexes of windows to merge.
         k: number of PCs to retain in the output.
             By default will keep all.
+        min_maf: pcangsd minMaf.
         maf_iter: pcangsd maf_iter argument.
         maf_tole: pcangsd maf_tole argument.
         n_eig: pcangsd n_eig argument.
@@ -507,6 +522,7 @@ def pcangsd_merged_windows(
         k = ds.dims["samples"]
 
     args_pcangsd = dict(
+        min_maf=min_maf,
         maf_iter=maf_iter,
         maf_tole=maf_tole,
         n_eig=n_eig,
