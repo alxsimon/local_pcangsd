@@ -119,6 +119,7 @@ def window(
 
     Wrapper arround sgkit.window_by_[...].
     Size either in bp or number of variants depending on type.
+    Drops empty windows.
 
     Args:
         ds: input dataset.
@@ -130,6 +131,12 @@ def window(
 
     Returns:
         xarray.Dataset: ds input with appended windowing variables.
+            New dimension `windows` created.
+            created variables:
+                - window_contig
+                - window_start
+                - window_stop
+                - window_used: boolean indicating if window is used following min_maf filtering.
 
     Raises:
         ValueError: if type is not 'position' or 'variant'.
@@ -149,10 +156,6 @@ def window(
     dropped_win = np.where(
         (win_stop - win_start) == 0
     )[0]
-    # dropped_var = np.concatenate([
-    #     range(win_start[w], win_stop[w])
-    #     for w in dropped_win
-    # ])
     
     with dask.config.set(**{'array.slicing.split_large_chunks': True}):
         ds = ds.drop_sel({'windows': dropped_win})
@@ -275,7 +278,6 @@ def _create_save_pca_result(
                 "total_variance": ([DIM_WINDOW], np.array([res[1]])),
                 "vals": ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
                 "vectors": ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
-                # "variant_used": ([DIM_VARIANT], res[4]),
             },
             attrs=attrs,
         )
@@ -455,7 +457,6 @@ def pca_window(
             zarr_list,
             engine="zarr",
             parallel=True,
-            # preprocess=lambda d: d.drop_vars('variant_used'),
         )
 
         # transfer variant info to pca dataset
@@ -464,15 +465,6 @@ def pca_window(
         ds_pca['variant_contig_name'] = ds.variant_contig_name
 
         ds_pca['variant_used'] = ([DIM_VARIANT], np.concatenate(variant_used_list))
-
-        # following assumes that zarr_list is in the right order
-        # ds_pca['variant_used'] = xr.concat(
-        #     [xr.open_zarr(f).variant_used for f in zarr_list],
-        #     dim='variants',
-        # )
-
-        # output window size and number of used variants
-        # ds_pca['window_n_loci'] = ds_pca.window_stop - ds_pca.window_start
 
         to_store = ds_pca.copy()
         for var in to_store:
