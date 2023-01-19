@@ -7,13 +7,9 @@ import dask
 from sgkit.window import _get_chunked_windows, _sizes_to_start_offsets
 from pcangsd import shared
 from pcangsd import covariance
-from pcangsd import reader_cy
 import os
-import contextlib
 from typing import Optional
 import shutil
-
-import io
 from contextlib import redirect_stdout
 
 DIM_VARIANT = "variants"
@@ -148,10 +144,15 @@ def window(
         ds = sg.window_by_variant(ds, size=size)
 
     # only keep windows with enough variants
-    kept = np.where(
-        (ds.window_stop.values - ds.window_start.values) >= min_variant_number
+    win_stop = ds.window_stop.values
+    win_start = ds.window_start.values
+    dropped_win = np.where(
+        (win_stop - win_start) < min_variant_number
     )[0]
-    return ds.isel(windows=kept)
+    
+    with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+        ds = ds.drop_sel({'windows': dropped_win})
+    return ds
 
 
 def _pcangsd_wrapper(
@@ -172,7 +173,7 @@ def _pcangsd_wrapper(
             Allows to pass pcangsd specific arguments.
 
     Returns:
-        tuple: (covariance matrix, total variance, eigen values, eigen vectors)
+        tuple: (covariance matrix, total variance, eigen values, eigen vectors, mask_maf)
     """
 
     L = gl[:, :, :-1].reshape(gl.shape[0], -1)
@@ -207,11 +208,11 @@ def _pcangsd_wrapper(
     vals = vals.astype(np.float32)
     vectors = vectors.astype(np.float32)
     total_variance = np.sum(vals)
-    return C, total_variance, vals[:k], vectors[:, :k].T
+    return C, total_variance, vals[:k], vectors[:, :k].T, mask_maf
 
 
 def _create_save_pca_result(
-    res: tuple[np.array, float, np.array, np.array],
+    res: tuple[np.array, float, np.array, np.array, np.array],
     window_index,
     window_contigs,
     window_starts,
@@ -264,9 +265,11 @@ def _create_save_pca_result(
                 "total_variance": ([DIM_WINDOW], np.array([res[1]])),
                 "vals": ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
                 "vectors": ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
+                "variant_used": ([DIM_VARIANT], res[4]),
             },
             attrs=attrs,
         )
+        window_ds['windows'] = np.array([window_index])
         window_ds.to_zarr(tmp_file, mode="w")
     elif os.path.exists(tmp_file):
         print(f"{tmp_file} already exists and overwrite={overwrite}, leaving as is.")
@@ -429,16 +432,21 @@ def pca_window(
 
         ds_pca = xr.open_mfdataset(
             zarr_list,
-            combine="nested",
-            concat_dim="windows",
             engine="zarr",
-            data_vars='minimal',
             parallel=True,
+            preprocess=lambda d: d.drop_vars('variant_used'),
         )
+
         # transfer variant info to pca dataset
         ds_pca['variant_position'] = ds.variant_position
         ds_pca['variant_contig'] = ds.variant_contig
         ds_pca['variant_contig_name'] = ds.variant_contig_name
+
+        # following assumes that zarr_list is in the right order
+        ds_pca['variant_used'] = xr.concat(
+            [xr.open_zarr(f).variant_used for f in zarr_list],
+            dim='variants',
+        )
 
         to_store = ds_pca.copy()
         for var in to_store:
@@ -567,7 +575,7 @@ def get_window_center(
             "Variables 'window_start' and 'window_stop' not defined in the Dataset."
         )
 
-    pos_start = ds.variant_position.values[ds.window_start]
+    pos_start = ds.variant_position.values[ds.window_start.values]
     pos_stop = ds.variant_position.values[ds.window_stop.values - 1]
     window_center = pos_start + (pos_stop - pos_start)/2
 

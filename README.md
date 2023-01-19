@@ -18,8 +18,8 @@ Requirements can be seen in the [`conda_env.yaml`](https://github.com/alxsimon/l
 The easiest way to install local_pcangsd and its dependencies is through conda:
 
 ```bash
-conda env create -f conda_env.yaml
-# OR mamba env create -f conda_env.yaml
+mamba env create -f conda_env.yaml
+# OR conda env create -f conda_env.yaml
 conda activate local_pcangsd
 git clone https://github.com/alxsimon/local_pcangsd.git
 pip install ./local_pcangsd
