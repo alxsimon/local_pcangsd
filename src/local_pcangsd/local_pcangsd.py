@@ -84,7 +84,7 @@ def beagle_to_zarr(input: str, store: str, chunksize: int = 10000) -> None:
     # first pass to obtain contig names
     df_chunked = pd.read_csv(input, sep="\t", chunksize=chunksize)
     contigs = [
-        df.marker.str.rsplit("_", 1, expand=True).iloc[:, 0].unique()
+        df.marker.str.rsplit("_", n=1, expand=True).iloc[:, 0].unique()
         for df in df_chunked
     ]
     contigs = list(np.unique(np.hstack(contigs)))
@@ -143,15 +143,22 @@ def window(
     elif type == "variant":
         ds = sg.window_by_variant(ds, size=size)
 
-    # only keep windows with enough variants
+    # drop empty windows
     win_stop = ds.window_stop.values
     win_start = ds.window_start.values
     dropped_win = np.where(
-        (win_stop - win_start) < min_variant_number
+        (win_stop - win_start) == 0
     )[0]
+    # dropped_var = np.concatenate([
+    #     range(win_start[w], win_stop[w])
+    #     for w in dropped_win
+    # ])
     
     with dask.config.set(**{'array.slicing.split_large_chunks': True}):
         ds = ds.drop_sel({'windows': dropped_win})
+
+    ds['window_used'] = (ds.window_stop - ds.window_start > min_variant_number)
+
     return ds
 
 
@@ -176,9 +183,12 @@ def _pcangsd_wrapper(
         tuple: (covariance matrix, total variance, eigen values, eigen vectors, mask_maf)
     """
 
+    N_samples = gl.shape[1]
+    if k > N_samples:
+        k = N_samples
+
     L = gl[:, :, :-1].reshape(gl.shape[0], -1)
     L = L.astype("float32")
-
     args_emMAF = dict(
         iter=kwargs["maf_iter"],
         tole=kwargs["maf_tole"],
@@ -212,7 +222,7 @@ def _pcangsd_wrapper(
 
 
 def _create_save_pca_result(
-    res: tuple[np.array, float, np.array, np.array, np.array],
+    res: tuple[np.array, float, np.array, np.array],
     window_index,
     window_contigs,
     window_starts,
@@ -265,7 +275,7 @@ def _create_save_pca_result(
                 "total_variance": ([DIM_WINDOW], np.array([res[1]])),
                 "vals": ([DIM_WINDOW, DIM_PC], res[2][np.newaxis]),
                 "vectors": ([DIM_WINDOW, DIM_PC, DIM_SAMPLE], res[3][np.newaxis]),
-                "variant_used": ([DIM_VARIANT], res[4]),
+                # "variant_used": ([DIM_VARIANT], res[4]),
             },
             attrs=attrs,
         )
@@ -348,6 +358,8 @@ def pca_window(
     window_contigs = ds.window_contig.values
     window_starts = ds.window_start.values
     window_stops = ds.window_stop.values
+    window_used = ds.window_used.values
+    N_win = len(window_contigs)
 
     values = da.asarray(values)
 
@@ -374,6 +386,8 @@ def pca_window(
 
     chunk_offsets = _sizes_to_start_offsets(windows_per_chunk)
 
+    variant_used_list = [None] * N_win
+
     try:
         if not os.path.exists(tmp_folder):
             os.mkdir(tmp_folder)
@@ -391,23 +405,30 @@ def pca_window(
                 :chunk_number
             ].sum()  # number of windows in all previous chunks
             for i, j in zip(chunk_window_starts, chunk_window_stops):
-                res_ij = _pcangsd_wrapper(
-                    x[i:j],
-                    k=k,
-                    **args_pcangsd,
-                )
-                tmp_file = _create_save_pca_result(
-                    res_ij,
-                    window_index,
-                    window_contigs,
-                    window_starts,
-                    window_stops,
-                    ds.sample_id.values,
-                    ds.attrs,
-                    tmp_folder,
-                    overwrite,
-                )
-                zarr_list.append(tmp_file)
+                if window_used[window_index]:
+                    res_ij = _pcangsd_wrapper(
+                        x[i:j],
+                        k=k,
+                        **args_pcangsd,
+                    )
+                    tmp_file = _create_save_pca_result(
+                        res_ij[:-1],
+                        window_index,
+                        window_contigs,
+                        window_starts,
+                        window_stops,
+                        ds.sample_id.values,
+                        ds.attrs,
+                        tmp_folder,
+                        overwrite,
+                    )
+                    zarr_list.append(tmp_file)
+                    variant_used_list[window_index] = res_ij[-1]
+                else:
+                    variant_used_list[window_index] = np.full(
+                        window_stops[window_index] - window_starts[window_index],
+                        False,
+                    )
                 window_index += 1
             return np.array(zarr_list, dtype=object)
 
@@ -434,7 +455,7 @@ def pca_window(
             zarr_list,
             engine="zarr",
             parallel=True,
-            preprocess=lambda d: d.drop_vars('variant_used'),
+            # preprocess=lambda d: d.drop_vars('variant_used'),
         )
 
         # transfer variant info to pca dataset
@@ -442,11 +463,16 @@ def pca_window(
         ds_pca['variant_contig'] = ds.variant_contig
         ds_pca['variant_contig_name'] = ds.variant_contig_name
 
+        ds_pca['variant_used'] = ([DIM_VARIANT], np.concatenate(variant_used_list))
+
         # following assumes that zarr_list is in the right order
-        ds_pca['variant_used'] = xr.concat(
-            [xr.open_zarr(f).variant_used for f in zarr_list],
-            dim='variants',
-        )
+        # ds_pca['variant_used'] = xr.concat(
+        #     [xr.open_zarr(f).variant_used for f in zarr_list],
+        #     dim='variants',
+        # )
+
+        # output window size and number of used variants
+        # ds_pca['window_n_loci'] = ds_pca.window_stop - ds_pca.window_start
 
         to_store = ds_pca.copy()
         for var in to_store:
