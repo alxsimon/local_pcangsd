@@ -34,13 +34,13 @@ classifiers = [
 #     'pcangsd @ git+https://github.com/alxsimon/pcangsd.git',# fork for install
 # ]
 
-# [project.optional-dependencies]
-# doc = [
-#     "sphinx>4,<=4.2.0",
-#     "sphinx_autodoc_typehints>=1.14.0",
-#     "sphinx-book-theme",
-#     "pydata-sphinx-theme",
-# ]
+[project.optional-dependencies]
+doc = [
+    "sphinx>4,<=4.2.0",
+    "sphinx_autodoc_typehints>=1.14.0",
+    "sphinx-book-theme",
+    "pydata-sphinx-theme",
+]
 
 [project.scripts]
 local_pcangsd = 'lp_cli:main'
