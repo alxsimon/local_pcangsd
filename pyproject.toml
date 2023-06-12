@@ -1,50 +1,18 @@
+[tool.poetry]
+name = "local-pcangsd"
+version = "0.1.0"
+description = ""
+authors = ["Alexis Simon <alexis.simon@normalesup.org>"]
+readme = "README.md"
+packages = [{include = "local_pcangsd"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.24.3"
+xarray = "^2023.5.0"
+sgkit = "^0.7.0"
+
+
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-    "setuptools",
-    "wheel",
-]
-
-[project]
-name = 'local_pcangsd'
-version = '0.0.2'
-authors = [
-    {name = "Alexis Simon", email = "alexis.simon@normalesup.org"},
-]
-description = "Perform local PCA on low-coverage data."
-readme = 'README.md'
-requires-python = '>=3.6,<3.10'
-license = {text = "MIT"}
-classifiers = [
-    'Development Status :: 1 - Planning',
-    'Programming Language :: Python :: 3',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: OS Independent',
-    'Topic :: Scientific/Engineering :: Bio-Informatics',
-]
-
-# Too much of a mess dealing with dependencies, use conda
-# dependencies = [
-#     'pandas',
-#     'dask',
-#     'xarray',
-#     'sgkit>=0.5',
-#     'numpy<1.22',
-#     'scipy<1.10',
-#     'pcangsd @ git+https://github.com/alxsimon/pcangsd.git',# fork for install
-# ]
-
-[project.optional-dependencies]
-doc = [
-    "sphinx>4,<=4.2.0",
-    "sphinx_autodoc_typehints>=1.14.0",
-    "sphinx-book-theme",
-    "pydata-sphinx-theme",
-]
-
-[project.scripts]
-local_pcangsd = 'lp_cli:main'
-
-[project.urls]
-documentation = 'https://alxsimon.github.io/local_pcangsd'
-repository = 'https://github.com/alxsim/local_pcangsd'
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
