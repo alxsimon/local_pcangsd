@@ -1,16 +1,22 @@
 [tool.poetry]
 name = "local-pcangsd"
-version = "0.1.0"
-description = ""
+version = "0.0.2"
+description = "Perform local PCA on low-coverage data."
 authors = ["Alexis Simon <alexis.simon@normalesup.org>"]
 readme = "README.md"
-packages = [{include = "local_pcangsd"}]
+packages = [
+  { include = "local_pcangsd", from = "src"}
+]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-numpy = "^1.24.3"
+python = ">=3.9,<3.12"
+numpy = "==1.24.3"
 xarray = "^2023.5.0"
 sgkit = "^0.7.0"
+pandas = "^2.0.2"
+cython = "^0.29.35"
+scipy = "==1.10.1"
+pcangsd = { git = "https://github.com/alxsimon/pcangsd" }
 
 
 [build-system]
