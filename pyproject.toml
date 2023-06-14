@@ -7,15 +7,22 @@ readme = "README.md"
 packages = [
   { include = "local_pcangsd", from = "src"}
 ]
+license = "MIT"
+classifiers = [
+    'Development Status :: 1 - Planning',
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent',
+    'Topic :: Scientific/Engineering :: Bio-Informatics',
+]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-numpy = "==1.24.3"
-xarray = "^2023.5.0"
-sgkit = "^0.7.0"
-pandas = "^2.0.2"
-cython = "^0.29.35"
-scipy = "==1.10.1"
+python = "^3.9"
+numpy = "*"
+xarray = "*"
+sgkit = "*"
+pandas = "*"
+scipy = "*"
 pcangsd = { git = "https://github.com/alxsimon/pcangsd" }
 
 
