@@ -18,7 +18,7 @@ license = {text = "MIT"}
 classifiers = [
     'Development Status :: 1 - Planning',
     'Programming Language :: Python :: 3',
-    'License :: OSI Approved :: MIT License',
+    'License :: OSI Approved :: GNU Affero General Public License v3',
     'Operating System :: OS Independent',
     'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
