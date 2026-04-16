@@ -7,13 +7,13 @@ requires = [
 
 [project]
 name = 'local_pcangsd'
-version = '0.0.2'
+version = '0.0.3'
 authors = [
     {name = "Alexis Simon", email = "alexis.simon@normalesup.org"},
 ]
 description = "Perform local PCA on low-coverage data."
 readme = 'README.md'
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 license = {text = "MIT"}
 classifiers = [
     'Development Status :: 1 - Planning',
@@ -22,17 +22,15 @@ classifiers = [
     'Operating System :: OS Independent',
     'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
-
-# Too much of a mess dealing with dependencies, use conda
-# dependencies = [
-#     'pandas',
-#     'dask',
-#     'xarray',
-#     'sgkit>=0.5',
-#     'numpy<1.22',
-#     'scipy<1.10',
-#     'pcangsd @ git+https://github.com/alxsimon/pcangsd.git',# fork for install
-# ]
+dependencies = [
+    'pandas',
+    'dask',
+    'xarray',
+    'sgkit',
+    'numpy',
+    'scipy',
+    'pcangsd',
+]
 
 [project.optional-dependencies]
 doc = [
